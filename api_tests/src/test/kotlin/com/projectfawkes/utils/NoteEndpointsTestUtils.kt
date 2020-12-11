@@ -16,7 +16,6 @@ const val NOTE_ENDPOINT = "/note"
 
 fun createNote(authManager: AuthManager, title: String, text: String? = null): String {
     val headers = HttpHeaders()
-//    authManager.addAuthTokenToRequest(headers)
     headers.set("testUsername", authManager.uid)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
@@ -24,7 +23,8 @@ fun createNote(authManager: AuthManager, title: String, text: String? = null): S
     if (text != null) map.add("text", text)
     val request = HttpEntity(map, headers)
 
-    val response: ResponseEntity<String> = restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+    val response: ResponseEntity<String> =
+        restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.PUT, request, String::class.java)
     val note: Note = jacksonObjectMapper().readValue(response.body ?: "")
 
     return note.id
@@ -32,20 +32,19 @@ fun createNote(authManager: AuthManager, title: String, text: String? = null): S
 
 fun getNoteById(authManager: AuthManager, id: String): List<Note> {
     val headers = HttpHeaders()
-//    authManager.addAuthTokenToRequest(headers)
-        headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", authManager.uid)
     val request: HttpEntity<String> = HttpEntity(headers)
     val builder: UriComponentsBuilder = UriComponentsBuilder
-            .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
-            .queryParam("id", id)
-    val response: ResponseEntity<String> = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
+        .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
+        .queryParam("id", id)
+    val response: ResponseEntity<String> =
+        restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
 fun updateNote(authManager: AuthManager, updateNoteObject: UpdateNote): ResponseEntity<String> {
     val headers = HttpHeaders()
-//    authManager.addAuthTokenToRequest(headers)
-        headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", authManager.uid)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
 
@@ -59,24 +58,28 @@ fun updateNote(authManager: AuthManager, updateNoteObject: UpdateNote): Response
 
 fun getNotesByCreator(authManager: AuthManager): List<Note> {
     val headers = HttpHeaders()
-//    authManager.addAuthTokenToRequest(headers)
-        headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", authManager.uid)
     val request: HttpEntity<String> = HttpEntity(headers)
     val builder: UriComponentsBuilder = UriComponentsBuilder
-            .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
-    val response: ResponseEntity<String> = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
+        .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
+    val response: ResponseEntity<String> =
+        restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
 
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
 fun deleteNote(authManager: AuthManager, id: String): ResponseEntity<String> {
     val headers = HttpHeaders()
-//    authManager.addAuthTokenToRequest(headers)
-        headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", authManager.uid)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
     map.add("id", id)
     val request = HttpEntity(map, headers)
 
-    return restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.DELETE, request, String::class.java)
+    return restTemplate.exchange(
+        "$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT",
+        HttpMethod.DELETE,
+        request,
+        String::class.java
+    )
 }

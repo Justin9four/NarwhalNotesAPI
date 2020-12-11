@@ -1,5 +1,5 @@
-package com.projectfawkes.api.dataClasses
+package com.projectfawkes.responseObjects
 
 data class ServiceAccount(val accountName: String,
                           val accountEmail: String,
-                          val hash: String)
+                          val password: String)

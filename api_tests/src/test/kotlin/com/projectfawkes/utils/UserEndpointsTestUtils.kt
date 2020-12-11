@@ -2,14 +2,11 @@ package com.projectfawkes.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.projectfawkes.AuthManager
-import com.projectfawkes.BABY_YODA
-import com.projectfawkes.BASE_URL
+import com.projectfawkes.*
 import com.projectfawkes.responseObjects.Account
 import com.projectfawkes.responseObjects.AuthenticationObject
 import com.projectfawkes.responseObjects.UpdateUser
 import com.projectfawkes.responseObjects.User
-import com.projectfawkes.restTemplate
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.*
@@ -25,9 +22,8 @@ const val AUTHENTICATE_ENDPOINT = "/authenticate"
 fun createUser(authManager: AuthManager, firstName: String, lastName: String, email: String, dob: String): Account {
     val headers = HttpHeaders()
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+    addBasicAuthToRequest(headers)
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
-    map.add("serviceAccountId", "F68SDYGEHV79RG9W834CTY89WY7T8FCW84NHT7830WTHCF7HFT4F78ERHC78RGH748R7804TCH79MPSUGSY7459H9A")
-    map.add("key", BABY_YODA)
 
     map.add("firstName", firstName)
     map.add("lastName", lastName)
@@ -47,6 +43,7 @@ fun authenticate(authManager: AuthManager): Account {
     val builder: UriComponentsBuilder = UriComponentsBuilder
             .fromHttpUrl("$BASE_URL$AUTHENTICATE_ENDPOINT")
     val headers = HttpHeaders()
+    addBasicAuthToRequest(headers)
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
     if (!authManager.authToken.isNullOrBlank()) {
         authManager.addAuthTokenToRequest(headers)

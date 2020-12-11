@@ -15,7 +15,6 @@ import org.testng.annotations.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-// TODO Note: the tests that fail here should pass when Service Account validation is included back in API
 class UserEndpointsFailureTest {
     private val logger: Logger = LogManager.getLogger()
     private var username = "testUser123"
@@ -59,8 +58,7 @@ class UserEndpointsFailureTest {
     fun createUserMissingField(body: LinkedMultiValueMap<String, String>, validationError: ValidationError) {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-        body.add("serviceAccountId", "F68SDYGEHV79RG9W834CTY89WY7T8FCW84NHT7830WTHCF7HFT4F78ERHC78RGH748R7804TCH79MPSUGSY7459H9A")
-        body.add("key", BABY_YODA)
+        addBasicAuthToRequest(headers)
         val request = HttpEntity(body, headers)
 
         try {

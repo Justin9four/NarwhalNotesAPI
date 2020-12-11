@@ -53,7 +53,6 @@ class NoteEndpointsFailureTest {
     fun createNoteMissingField(body: LinkedMultiValueMap<String, String>) {
         val headers = HttpHeaders()
         headers.set("testUsername", authManager.uid)
-//        authManager.addAuthTokenToRequest(headers)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = body
         val request = HttpEntity(map, headers)
@@ -97,7 +96,6 @@ class NoteEndpointsFailureTest {
     fun updateOtherUsersNote() {
         val headers = HttpHeaders()
         headers.set("testUsername", authManager.uid)
-//        authManager.addAuthTokenToRequest(headers)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = LinkedMultiValueMap()
         map.add("id", noteIdUser2)
@@ -127,7 +125,6 @@ class NoteEndpointsFailureTest {
     @Test
     fun updateNoteByIdMissingId() {
         val headers = HttpHeaders()
-//        authManager.addAuthTokenToRequest(headers)
         headers.set("testUsername", authManager.uid)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = LinkedMultiValueMap()
@@ -149,7 +146,6 @@ class NoteEndpointsFailureTest {
     @Test
     fun deleteNoteMissingId() {
         val headers = HttpHeaders()
-//        authManager.addAuthTokenToRequest(headers)
         headers.set("testUsername", authManager.uid)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = LinkedMultiValueMap()
