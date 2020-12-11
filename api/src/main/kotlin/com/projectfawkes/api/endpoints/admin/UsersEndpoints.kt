@@ -1,11 +1,12 @@
 package com.projectfawkes.api.endpoints.admin
 
+import com.projectfawkes.api.API_ENDPOINT
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 
-const val USERS_ENDPOINT = "/users"
+const val USERS_ENDPOINT = "$API_ENDPOINT/users"
 
 @RestController
 @RequestMapping(USERS_ENDPOINT)

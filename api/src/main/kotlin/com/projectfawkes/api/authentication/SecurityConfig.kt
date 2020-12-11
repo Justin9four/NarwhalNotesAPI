@@ -4,6 +4,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.projectfawkes.api.API_ENDPOINT
 import com.projectfawkes.api.USER_ENDPOINT
+import com.projectfawkes.api.endpoints.AUTHENTICATE_ENDPOINT
+import com.projectfawkes.api.endpoints.REGISTER_ENDPOINT
+import com.projectfawkes.api.endpoints.admin.USERS_ENDPOINT
 import com.projectfawkes.api.endpoints.user.NOTE_ENDPOINT
 import com.projectfawkes.api.errorHandler.UnauthorizedException
 import com.projectfawkes.api.models.getAccountByUsername
@@ -84,14 +87,27 @@ class IdTokenInterceptor : HandlerInterceptor {
         }
     }
 
+    private fun authenticateSession(request: HttpServletRequest) {
+        val sessionCookie: String? = WebUtils.getCookie(request, "session")?.value
+        val uid: String = getTestUidOrNull(request.getHeader("testUsername"))
+            ?: getUidFromSessionCookie(sessionCookie)
+        request.setAttribute("uid", uid)
+    }
+
+    private fun uriMatchesEndpoint(endpointWhitelist: List<String>, uri: String): Boolean {
+        return endpointWhitelist.any{ it == uri || "$it/" == uri}
+    }
+
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        val endpointsWithUserAuth = listOf(USER_ENDPOINT, USER_ENDPOINT + NOTE_ENDPOINT)
-        if (endpointsWithUserAuth.contains(request.requestURI)) {
-            logger.info("URI needs Auth")
-            val sessionCookie: String? = WebUtils.getCookie(request, "session")?.value
-            val uid: String = getTestUidOrNull(request.getHeader("testUsername"))
-                    ?: getUidFromSessionCookie(sessionCookie)
-            request.setAttribute("uid", uid)
+        val endpointsWithUserAuth = listOf(USER_ENDPOINT, USER_ENDPOINT + NOTE_ENDPOINT, USERS_ENDPOINT)
+        val endpointsWithServiceAccountAuth = listOf("$API_ENDPOINT$REGISTER_ENDPOINT", "$API_ENDPOINT$AUTHENTICATE_ENDPOINT")
+        logger.info("${request.method} ${request.requestURI}")
+        if (uriMatchesEndpoint(endpointsWithUserAuth, request.requestURI)) {
+            authenticateSession(request)
+        }
+        else if (uriMatchesEndpoint(endpointsWithServiceAccountAuth, request.requestURI)) {
+            // TODO implement Service Account Authentication
+            logger.info("Service Account Authentication not implemented")
         }
         return true
     }
@@ -102,21 +118,6 @@ class RequestHandler : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
         super.addInterceptors(registry)
         registry.addInterceptor(IdTokenInterceptor())
-    }
-}
-
-@Component
-class RestAuthenticationEntryPoint : AuthenticationEntryPoint {
-    private val logger: Logger = LogManager.getLogger()
-
-    @Throws(IOException::class)
-    override fun commence(
-            request: HttpServletRequest?,
-            response: HttpServletResponse,
-            authException: AuthenticationException?) {
-        logger.info("in RestAuthenticationEntryPoint")
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                "Unauthorized")
     }
 }
 
