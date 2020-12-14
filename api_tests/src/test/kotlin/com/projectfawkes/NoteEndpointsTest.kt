@@ -27,33 +27,34 @@ class NoteEndpointsTest {
 
     private var username = "testUser9752"
     private val password = "testBabyYodaIsAwesome^2194ThisIsAPassword"
-    private val authManager = AuthManager(username, password)
 
     @BeforeClass
     fun setUp() {
         testConnection()
-        val account = createUser(authManager, "firstName", "lastName",
-                "email@example.com", "12/12/1992")
+        val account = createUser(
+            username, password, "firstName", "lastName",
+            "email@example.com", "12/12/1992"
+        )
         creator = account.uid!!
         logger.info("Test user created: $creator username= $username")
     }
 
     @AfterClass
     fun tearDown() {
-        deleteUser(authManager)
-        logger.info("Test user deleted: ${authManager.uid}")
+        deleteUser(username)
+        logger.info("Test user deleted: $username")
     }
 
     @Test
     fun createNoteSuccess() {
-        ids.add(createNote(authManager, title, text))
+        ids.add(createNote(username, title, text))
 
         assertNotEquals(ids[0], "")
     }
 
     @Test(dependsOnMethods = ["createNoteSuccess"], priority = 1)
     fun getNoteByIdSuccess() {
-        val notes = getNoteById(authManager, ids[0])
+        val notes = getNoteById(username, ids[0])
         val note = notes[0]
 
         assertEquals(notes.size, 1, "More than one note returned by ID")
@@ -67,20 +68,20 @@ class NoteEndpointsTest {
         text = "Some other random text"
         val noteToUpdate = UpdateNote(id = ids[0], text = text)
 
-        val response = updateNote(authManager, noteToUpdate)
+        val response = updateNote(username, noteToUpdate)
         assertEquals(response.statusCode, HttpStatus.OK)
     }
 
     @Test(dependsOnMethods = ["createNoteSuccess"], priority = 3)
     fun createSecondNoteSuccess() {
-        ids.add(createNote(authManager, title2))
+        ids.add(createNote(username, title2))
 
         assertNotEquals(ids[1], "")
     }
 
     @Test(dependsOnMethods = ["createNoteSuccess"], priority = 4)
     fun getNotesByCreatorSuccess() {
-        val notes = getNotesByCreator(authManager)
+        val notes = getNotesByCreator(username)
         logger.info("User $creator notes: $notes")
 
         assertEquals(notes.size, ids.size, "Returned incorrect number of notes")
@@ -92,12 +93,12 @@ class NoteEndpointsTest {
     fun deleteNotesSuccess() {
         logger.info("size " + ids.size)
         for (id in ids) {
-            val response = deleteNote(authManager, id)
+            val response = deleteNote(username, id)
             assertEquals(response.statusCode, HttpStatus.OK)
 
             // get the user to determine if deleted
             try {
-                getNoteById(authManager, id)
+                getNoteById(username, id)
                 fail()
             } catch (e: HttpClientErrorException) {
                 if (e.statusCode == HttpStatus.NOT_FOUND) {

@@ -21,38 +21,40 @@ class NoteEndpointsFailureTest {
 
     private var username = "testUser9792"
     private val password = "testBabyYodaIsAwesome^2194ThisIsAPassword"
-    private val authManager = AuthManager(username, password)
     private var username2 = "testUser4021"
-    private val authManager2 = AuthManager(username2, password)
     private var noteIdUser2 = ""
 
     @BeforeClass
     fun setUp() {
         testConnection()
-        val account = createUser(authManager, "firstName", "lastName",
-                "email@example.com", "12/12/1992")
+        val account = createUser(
+            username, password, "firstName", "lastName",
+            "email@example.com", "12/12/1992"
+        )
         creator = account.uid!!
         logger.info("Test user created: $creator username= $username")
-        createUser(authManager2, "firstName", "lastName",
-                "email1@example.com", "12/12/1992")
+        createUser(
+            username2, password, "firstName", "lastName",
+            "email1@example.com", "12/12/1992"
+        )
         logger.info("Test user created: username= $username2")
-        noteIdUser2 = createNote(authManager2, "title")
+        noteIdUser2 = createNote(username2, "title")
     }
 
     @AfterClass
     fun tearDown() {
-        deleteUser(authManager)
-        logger.info("Test user deleted: ${authManager.uid}")
-        deleteNote(authManager2, noteIdUser2)
+        deleteUser(username)
+        logger.info("Test user deleted: $username")
+        deleteNote(username2, noteIdUser2)
         logger.info("Test note deleted: $noteIdUser2")
-        deleteUser(authManager2)
-        logger.info("Test user deleted: ${authManager2.uid}")
+        deleteUser(username2)
+        logger.info("Test user deleted: $username2")
     }
 
     @Test(dataProvider = "createNoteMissingField")
     fun createNoteMissingField(body: LinkedMultiValueMap<String, String>) {
         val headers = HttpHeaders()
-        headers.set("testUsername", authManager.uid)
+        headers.set("testUsername", username)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = body
         val request = HttpEntity(map, headers)
@@ -95,7 +97,7 @@ class NoteEndpointsFailureTest {
     @Test
     fun updateOtherUsersNote() {
         val headers = HttpHeaders()
-        headers.set("testUsername", authManager.uid)
+        headers.set("testUsername", username)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = LinkedMultiValueMap()
         map.add("id", noteIdUser2)
@@ -125,7 +127,7 @@ class NoteEndpointsFailureTest {
     @Test
     fun updateNoteByIdMissingId() {
         val headers = HttpHeaders()
-        headers.set("testUsername", authManager.uid)
+        headers.set("testUsername", username)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = LinkedMultiValueMap()
 
@@ -146,7 +148,7 @@ class NoteEndpointsFailureTest {
     @Test
     fun deleteNoteMissingId() {
         val headers = HttpHeaders()
-        headers.set("testUsername", authManager.uid)
+        headers.set("testUsername", username)
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val map: MultiValueMap<String, String> = LinkedMultiValueMap()
         val request = HttpEntity(map, headers)

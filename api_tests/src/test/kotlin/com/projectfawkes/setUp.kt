@@ -38,12 +38,3 @@ fun addBasicAuthToRequest(headers: HttpHeaders) {
     val authHeader = "Basic " + String(encodedAuth)
     headers.add("Authorization", authHeader)
 }
-
-// TODO safe remove this class when I replace it
-class AuthManager (var uid: String, var password: String) {
-    var authToken: String? = null
-
-    fun addAuthTokenToRequest(headers: HttpHeaders) {
-        headers.add("Cookie", authToken!!)
-    }
-}

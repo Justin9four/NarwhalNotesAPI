@@ -2,7 +2,6 @@ package com.projectfawkes.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.projectfawkes.AuthManager
 import com.projectfawkes.BASE_URL
 import com.projectfawkes.responseObjects.Note
 import com.projectfawkes.responseObjects.UpdateNote
@@ -14,9 +13,9 @@ import org.springframework.web.util.UriComponentsBuilder
 
 const val NOTE_ENDPOINT = "/note"
 
-fun createNote(authManager: AuthManager, title: String, text: String? = null): String {
+fun createNote(username: String, title: String, text: String? = null): String {
     val headers = HttpHeaders()
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
     map.add("title", title)
@@ -30,9 +29,9 @@ fun createNote(authManager: AuthManager, title: String, text: String? = null): S
     return note.id
 }
 
-fun getNoteById(authManager: AuthManager, id: String): List<Note> {
+fun getNoteById(username: String, id: String): List<Note> {
     val headers = HttpHeaders()
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     val request: HttpEntity<String> = HttpEntity(headers)
     val builder: UriComponentsBuilder = UriComponentsBuilder
         .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
@@ -42,9 +41,9 @@ fun getNoteById(authManager: AuthManager, id: String): List<Note> {
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
-fun updateNote(authManager: AuthManager, updateNoteObject: UpdateNote): ResponseEntity<String> {
+fun updateNote(username: String, updateNoteObject: UpdateNote): ResponseEntity<String> {
     val headers = HttpHeaders()
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
 
@@ -56,9 +55,9 @@ fun updateNote(authManager: AuthManager, updateNoteObject: UpdateNote): Response
     return restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.POST, request, String::class.java)
 }
 
-fun getNotesByCreator(authManager: AuthManager): List<Note> {
+fun getNotesByCreator(username: String): List<Note> {
     val headers = HttpHeaders()
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     val request: HttpEntity<String> = HttpEntity(headers)
     val builder: UriComponentsBuilder = UriComponentsBuilder
         .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
@@ -68,9 +67,9 @@ fun getNotesByCreator(authManager: AuthManager): List<Note> {
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
-fun deleteNote(authManager: AuthManager, id: String): ResponseEntity<String> {
+fun deleteNote(username: String, id: String): ResponseEntity<String> {
     val headers = HttpHeaders()
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
     map.add("id", id)

@@ -15,9 +15,6 @@ class UserEndpointsTest {
     private val user = User(null, "testUser123", "email@example.com", null, "firstName", "lastName", null, "12 25 1996")
     private var password = "testBabyYodaIsAwesome^2194ThisIsAPassword"
 
-    private val authManager = AuthManager(user.username!!, password)
-
-
     @BeforeClass
     fun setUp() {
         testConnection()
@@ -25,13 +22,13 @@ class UserEndpointsTest {
 
     @Test
     fun createUserSuccess() {
-        val account = createUser(authManager, user.firstName!!, user.lastName!!, user.email!!, user.dob!!)
+        val account = createUser(user.username!!, password, user.firstName!!, user.lastName!!, user.email!!, user.dob!!)
         user.uid = account.uid
     }
 
     @Test(dependsOnMethods = ["createUserSuccess"])
     fun getUserSuccess() {
-        val user = getUser(authManager)
+        val user = getUser(user.username!!)
         assertEqualsUser(this.user, user)
     }
 
@@ -42,13 +39,13 @@ class UserEndpointsTest {
         this.user.photoUrl = "www.example.com"
         val userToUpdate = UpdateUser(photoUrl = this.user.photoUrl)
 
-        val response = updateUser(authManager, userToUpdate)
+        val response = updateUser(user.username!!, userToUpdate)
         assertEquals(response.statusCode, HttpStatus.OK)
     }
 
     @Test(dependsOnMethods = ["createUserSuccess", "updateUserPhotoUrlByIdSuccess"], alwaysRun = true)
     fun authenticateAfterUpdateSuccess() {
-        val account = authenticate(AuthManager(user.username!!, password))
+        val account = authenticate(user.username!!, password)
         val expectedAccount = Account(user.uid, user.username, user.email, user.photoUrl, listOf("ROLE_USER"))
         assertEqualsAccount(expectedAccount, account)
     }
@@ -59,7 +56,7 @@ class UserEndpointsTest {
         this.user.lastName = "Hamill"
         val userToUpdate = UpdateUser(firstName = this.user.firstName, lastName = this.user.lastName)
 
-        val response = updateUser(authManager, userToUpdate)
+        val response = updateUser(user.username!!, userToUpdate)
         assertEquals(response.statusCode, HttpStatus.OK)
     }
 
@@ -71,12 +68,12 @@ class UserEndpointsTest {
     @Test(dependsOnMethods = ["createUserSuccess", "getUserSuccess2"], expectedExceptions = [HttpClientErrorException::class], alwaysRun = true)
     fun deleteUserSuccess() {
         try {
-            val response = deleteUser(authManager)
+            val response = deleteUser(user.username!!)
             assertEquals(response.statusCode, HttpStatus.OK)
         } catch (e: HttpClientErrorException) {
             fail()
         }
-        authenticate(authManager)
+        authenticate(user.username!!, password)
     }
 
     private fun assertEqualsUser(expectedUser: User, actualUser: User) {

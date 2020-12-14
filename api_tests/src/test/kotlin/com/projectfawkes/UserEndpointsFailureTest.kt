@@ -23,7 +23,6 @@ class UserEndpointsFailureTest {
     private var email = "email@example.com"
     private var password = "testBabyYodaIsAwesome^2194ThisIsAPassword"
     private var dob = "12 25 1996"
-    private val authManager = AuthManager(username, password)
 
     data class ValidationError(val errorCode: Int, val details: ValidationErrorDetails)
 
@@ -32,19 +31,19 @@ class UserEndpointsFailureTest {
     @BeforeClass
     fun setUp() {
         testConnection()
-        createUser(authManager, firstName, lastName, email, dob)
+        createUser(username, password, firstName, lastName, email, dob)
     }
 
     @AfterClass
     fun tearDown() {
-        deleteUser(authManager)
-        logger.info("Test user deleted: ${authManager.uid}")
+        deleteUser(username)
+        logger.info("Test user deleted: $username")
     }
 
     @Test
     fun createUserUsernameAndEmailConflict() {
         try {
-            createUser(authManager, firstName, lastName, email, dob)
+            createUser(username, password, firstName, lastName, email, dob)
         } catch (e: HttpClientErrorException) {
             if(e.rawStatusCode == 409) {
                 assertEquals("[username, email] not unique", e.responseBodyAsString)

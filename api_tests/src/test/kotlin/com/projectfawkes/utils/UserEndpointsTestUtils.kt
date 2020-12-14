@@ -2,24 +2,25 @@ package com.projectfawkes.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.projectfawkes.*
+import com.projectfawkes.BASE_URL
+import com.projectfawkes.addBasicAuthToRequest
 import com.projectfawkes.responseObjects.Account
-import com.projectfawkes.responseObjects.AuthenticationObject
 import com.projectfawkes.responseObjects.UpdateUser
 import com.projectfawkes.responseObjects.User
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import com.projectfawkes.restTemplate
 import org.springframework.http.*
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.util.UriComponentsBuilder
 
-private val logger: Logger = LogManager.getLogger()
 const val REGISTER_ENDPOINT = "/register"
 const val USER_ENDPOINT = "/user"
 const val AUTHENTICATE_ENDPOINT = "/authenticate"
 
-fun createUser(authManager: AuthManager, firstName: String, lastName: String, email: String, dob: String): Account {
+fun createUser(
+    username: String, password: String,
+    firstName: String, lastName: String, email: String, dob: String
+): Account {
     val headers = HttpHeaders()
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     addBasicAuthToRequest(headers)
@@ -28,55 +29,48 @@ fun createUser(authManager: AuthManager, firstName: String, lastName: String, em
     map.add("firstName", firstName)
     map.add("lastName", lastName)
     map.add("email", email)
-    map.add("username", authManager.uid)
-    map.add("password", authManager.password)
+    map.add("username", username)
+    map.add("password", password)
     map.add("dob", dob)
     val request = HttpEntity(map, headers)
 
-    val response: ResponseEntity<String> = restTemplate.exchange("$BASE_URL$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
-    authManager.authToken = response.headers.getFirst("Set-Cookie")!!
+    val response: ResponseEntity<String> =
+        restTemplate.exchange("$BASE_URL$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
 
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
-fun authenticate(authManager: AuthManager): Account {
+fun authenticate(username: String, password: String): Account {
     val builder: UriComponentsBuilder = UriComponentsBuilder
-            .fromHttpUrl("$BASE_URL$AUTHENTICATE_ENDPOINT")
+        .fromHttpUrl("$BASE_URL$AUTHENTICATE_ENDPOINT")
     val headers = HttpHeaders()
     addBasicAuthToRequest(headers)
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
-    if (!authManager.authToken.isNullOrBlank()) {
-        authManager.addAuthTokenToRequest(headers)
-        logger.info("Authenticated with auth token")
-    } else {
-        map.add("username", authManager.uid)
-        map.add("password", authManager.password)
-        logger.info("Authenticated with basic auth")
-    }
+    map.add("username", username)
+    map.add("password", password)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val request = HttpEntity(map, headers)
-    val response: ResponseEntity<String> = restTemplate.exchange(builder.toUriString(), HttpMethod.POST, request, String::class.java)
-    if (authManager.authToken.isNullOrBlank()) {
-        authManager.authToken = response.headers.getFirst("Set-Cookie")!!
-    }
+    val response: ResponseEntity<String> =
+        restTemplate.exchange(builder.toUriString(), HttpMethod.POST, request, String::class.java)
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
-fun getUser(authManager: AuthManager): User {
+fun getUser(username: String): User {
     val builder: UriComponentsBuilder = UriComponentsBuilder
-            .fromHttpUrl("$BASE_URL$USER_ENDPOINT")
+        .fromHttpUrl("$BASE_URL$USER_ENDPOINT")
     val headers = HttpHeaders()
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val request = HttpEntity<String>(headers)
-    val response: ResponseEntity<String> = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
+    val response: ResponseEntity<String> =
+        restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
-fun updateUser(authManager: AuthManager, updateUserObject: UpdateUser): ResponseEntity<String> {
+fun updateUser(username: String, updateUserObject: UpdateUser): ResponseEntity<String> {
     val headers = HttpHeaders()
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
 
     if (!updateUserObject.firstName.isNullOrBlank()) map.add("firstName", updateUserObject.firstName)
@@ -90,9 +84,9 @@ fun updateUser(authManager: AuthManager, updateUserObject: UpdateUser): Response
     return restTemplate.exchange("$BASE_URL$USER_ENDPOINT", HttpMethod.POST, request, String::class.java)
 }
 
-fun deleteUser(authManager: AuthManager): ResponseEntity<String> {
+fun deleteUser(username: String): ResponseEntity<String> {
     val headers = HttpHeaders()
-    headers.set("testUsername", authManager.uid)
+    headers.set("testUsername", username)
     headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
     val map: MultiValueMap<String, String> = LinkedMultiValueMap()
     val request = HttpEntity(map, headers)
