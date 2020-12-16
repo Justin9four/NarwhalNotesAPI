@@ -7,6 +7,7 @@ import com.projectfawkes.api.API_ENDPOINT
 import com.projectfawkes.api.USER_ENDPOINT
 import com.projectfawkes.api.dataClasses.ServiceAccount
 import com.projectfawkes.api.endpoints.AUTHENTICATE_ENDPOINT
+import com.projectfawkes.api.endpoints.CHECK_TOKEN_ENDPOINT
 import com.projectfawkes.api.endpoints.REGISTER_ENDPOINT
 import com.projectfawkes.api.endpoints.admin.USERS_ENDPOINT
 import com.projectfawkes.api.endpoints.user.NOTE_ENDPOINT
@@ -14,6 +15,7 @@ import com.projectfawkes.api.errorHandler.UnauthorizedException
 import com.projectfawkes.api.models.getAccountByUsername
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.springframework.http.HttpHeaders
 import org.springframework.security.crypto.bcrypt.BCrypt
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.util.WebUtils
@@ -38,15 +40,15 @@ class MyInterceptor : HandlerInterceptor {
         return null
     }
 
-    private fun getUidFromSessionCookie(sessionCookie: String?): String {
-        logger.info("TODO Verify ID Token")
+    private fun getUidFromSession(session: String?): String {
         // TIP for client. Might need to do some CSRF work
         return try {
             // Verify the session cookie. In this case an additional check is added to detect
             // if the user's Firebase session was revoked, user deleted/disabled, etc.
             val checkRevoked = true
             val decodedToken = FirebaseAuth.getInstance().verifySessionCookie(
-                sessionCookie, checkRevoked)
+                session, checkRevoked
+            )
             decodedToken.uid
         } catch (e: Exception) {
             // Session cookie is unavailable, invalid or revoked. Force user to login.
@@ -57,7 +59,7 @@ class MyInterceptor : HandlerInterceptor {
     private fun authenticateSession(request: HttpServletRequest) {
         val sessionCookie: String? = WebUtils.getCookie(request, "session")?.value
         val uid: String = getTestUidOrNull(request.getHeader("testUsername"))
-            ?: getUidFromSessionCookie(sessionCookie)
+            ?: getUidFromSession(sessionCookie)
         request.setAttribute("uid", uid)
     }
 
@@ -72,27 +74,47 @@ class MyInterceptor : HandlerInterceptor {
             if (accountNameAndPassword.size != 2) {
                 throw UnauthorizedException("Unauthenticated Service Account")
             }
-            val serviceAccountHash = serviceAccounts.find{it.accountName == accountNameAndPassword[0] }!!.hash
+            val serviceAccountHash = serviceAccounts.find { it.accountName == accountNameAndPassword[0] }!!.hash
             if (!BCrypt.checkpw(accountNameAndPassword[1], serviceAccountHash)) {
                 throw UnauthorizedException("Unauthenticated Service Account")
             }
         } catch (e: NullPointerException) {
             throw UnauthorizedException("Unauthenticated Service Account")
+        } catch (e: IllegalArgumentException) {
+            throw UnauthorizedException("Unauthenticated Service Account")
         }
     }
 
     private fun uriMatchesEndpoint(endpointWhitelist: List<String>, uri: String): Boolean {
-        return endpointWhitelist.any{ it == uri || "$it/" == uri}
+        return endpointWhitelist.any { it == uri || "$it/" == uri }
+    }
+
+    private fun setHeaders(request: HttpServletRequest, response: HttpServletResponse) {
+        // TODO Only set Access-Control-Allow-Origin like this for DEV not PROD
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
+        response.setHeader("Access-Control-Allow-Credentials", "true")
+        response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "x-auth-token")
+        if (request.method == "OPTIONS") {
+            logger.info("OPTIONS ${request.requestURI}: Preflight Check")
+            response.setHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE")
+            response.setHeader("Access-Control-Allow-Headers", "Origin, Authorization, Content-Type, idToken")
+        }
     }
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
+        // must return false because OPTIONS method will still enter other endpoint (PUT, POST, DELETE, etc)
+        setHeaders(request, response)
+        if (request.method == "OPTIONS") return false
         val endpointsWithUserAuth = listOf(USER_ENDPOINT, USER_ENDPOINT + NOTE_ENDPOINT, USERS_ENDPOINT)
-        val endpointsWithServiceAccountAuth = listOf("$API_ENDPOINT$REGISTER_ENDPOINT", "$API_ENDPOINT$AUTHENTICATE_ENDPOINT")
+        val endpointsWithServiceAccountAuth = listOf(
+            "$API_ENDPOINT$REGISTER_ENDPOINT",
+            "$API_ENDPOINT$AUTHENTICATE_ENDPOINT",
+            "$API_ENDPOINT$CHECK_TOKEN_ENDPOINT"
+        )
         logger.info("${request.method} ${request.requestURI}")
         if (uriMatchesEndpoint(endpointsWithUserAuth, request.requestURI)) {
             authenticateSession(request)
-        }
-        else if (uriMatchesEndpoint(endpointsWithServiceAccountAuth, request.requestURI)) {
+        } else if (uriMatchesEndpoint(endpointsWithServiceAccountAuth, request.requestURI)) {
             // TODO implement Service Account Authentication
             authenticateServiceAccount(request)
             logger.info("Service Account Authentication not implemented")

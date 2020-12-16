@@ -9,8 +9,6 @@ import com.projectfawkes.responseObjects.UpdateUser
 import com.projectfawkes.responseObjects.User
 import com.projectfawkes.restTemplate
 import org.springframework.http.*
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
 import org.springframework.web.util.UriComponentsBuilder
 
 const val REGISTER_ENDPOINT = "/register"
@@ -22,17 +20,13 @@ fun createUser(
     firstName: String, lastName: String, email: String, dob: String
 ): Account {
     val headers = HttpHeaders()
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+    headers.contentType = MediaType.APPLICATION_JSON
     addBasicAuthToRequest(headers)
-    val map: MultiValueMap<String, String> = LinkedMultiValueMap()
-
-    map.add("firstName", firstName)
-    map.add("lastName", lastName)
-    map.add("email", email)
-    map.add("username", username)
-    map.add("password", password)
-    map.add("dob", dob)
-    val request = HttpEntity(map, headers)
+    val body = mapOf(
+        "firstName" to firstName, "lastName" to lastName, "email" to email,
+        "username" to username, "password" to password, "dob" to dob
+    )
+    val request = HttpEntity(body, headers)
 
     val response: ResponseEntity<String> =
         restTemplate.exchange("$BASE_URL$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
@@ -45,11 +39,9 @@ fun authenticate(username: String, password: String): Account {
         .fromHttpUrl("$BASE_URL$AUTHENTICATE_ENDPOINT")
     val headers = HttpHeaders()
     addBasicAuthToRequest(headers)
-    val map: MultiValueMap<String, String> = LinkedMultiValueMap()
-    map.add("username", username)
-    map.add("password", password)
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-    val request = HttpEntity(map, headers)
+    val body = mapOf("username" to username, "password" to password)
+    headers.contentType = MediaType.APPLICATION_JSON
+    val request = HttpEntity(body, headers)
     val response: ResponseEntity<String> =
         restTemplate.exchange(builder.toUriString(), HttpMethod.POST, request, String::class.java)
     return jacksonObjectMapper().readValue(response.body ?: "")
@@ -60,7 +52,7 @@ fun getUser(username: String): User {
         .fromHttpUrl("$BASE_URL$USER_ENDPOINT")
     val headers = HttpHeaders()
     headers.set("testUsername", username)
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+    headers.contentType = MediaType.APPLICATION_JSON
     val request = HttpEntity<String>(headers)
     val response: ResponseEntity<String> =
         restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
@@ -69,27 +61,26 @@ fun getUser(username: String): User {
 
 fun updateUser(username: String, updateUserObject: UpdateUser): ResponseEntity<String> {
     val headers = HttpHeaders()
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+    headers.contentType = MediaType.APPLICATION_JSON
     headers.set("testUsername", username)
-    val map: MultiValueMap<String, String> = LinkedMultiValueMap()
+    val body = mutableMapOf<String, String>()
 
-    if (!updateUserObject.firstName.isNullOrBlank()) map.add("firstName", updateUserObject.firstName)
-    if (!updateUserObject.lastName.isNullOrBlank()) map.add("lastName", updateUserObject.lastName)
-    if (!updateUserObject.username.isNullOrBlank()) map.add("username", updateUserObject.username)
-    if (!updateUserObject.dob.isNullOrBlank()) map.add("dob", updateUserObject.dob)
-    if (!updateUserObject.password.isNullOrBlank()) map.add("password", updateUserObject.password)
-    if (!updateUserObject.photoUrl.isNullOrBlank()) map.add("photoUrl", updateUserObject.photoUrl)
+    if (!updateUserObject.firstName.isNullOrBlank()) body["firstName"] = updateUserObject.firstName!!
+    if (!updateUserObject.lastName.isNullOrBlank()) body["lastName"] = updateUserObject.lastName!!
+    if (!updateUserObject.username.isNullOrBlank()) body["username"] = updateUserObject.username!!
+    if (!updateUserObject.dob.isNullOrBlank()) body["dob"] = updateUserObject.dob!!
+    if (!updateUserObject.password.isNullOrBlank()) body["password"] = updateUserObject.password!!
+    if (!updateUserObject.photoUrl.isNullOrBlank()) body["photoUrl"] = updateUserObject.photoUrl!!
 
-    val request = HttpEntity(map, headers)
+    val request = HttpEntity(body, headers)
     return restTemplate.exchange("$BASE_URL$USER_ENDPOINT", HttpMethod.POST, request, String::class.java)
 }
 
 fun deleteUser(username: String): ResponseEntity<String> {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-    val map: MultiValueMap<String, String> = LinkedMultiValueMap()
-    val request = HttpEntity(map, headers)
+    headers.contentType = MediaType.APPLICATION_JSON
+    val request = HttpEntity<String>(headers)
 
     return restTemplate.exchange("$BASE_URL$USER_ENDPOINT", HttpMethod.DELETE, request, String::class.java)
 }

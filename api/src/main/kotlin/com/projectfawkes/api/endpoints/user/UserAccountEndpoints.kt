@@ -3,21 +3,16 @@ package com.projectfawkes.api.endpoints.user
 import com.projectfawkes.api.USER_ENDPOINT
 import com.projectfawkes.api.dataClasses.Account
 import com.projectfawkes.api.dataClasses.Profile
-import com.projectfawkes.api.endpoints.UserSession
 import com.projectfawkes.api.errorHandler.Field
 import com.projectfawkes.api.errorHandler.Validator
 import com.projectfawkes.api.models.deleteUser
-import com.projectfawkes.api.models.getAccountByUsername
 import com.projectfawkes.api.models.updateUser
-import com.projectfawkes.api.returnDTOs.User
+import com.projectfawkes.api.responseDTOs.User
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
-import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 
 
@@ -26,32 +21,36 @@ import javax.servlet.http.HttpServletRequest
 class UserAccountEndpoints {
     private val logger: Logger = LogManager.getLogger()
 
-    @Resource(name = "sessionScopedUser")
-    var sessionScopedUser: UserSession? = null
+    // FOR NOW, keep this commented. I might decide to use sessions for something another time
+//    @Resource(name = "sessionScopedUser")
+//    var sessionScopedUser: UserSession? = null
 
     @GetMapping
-    fun getUser(requestBody: HttpServletRequest): ResponseEntity<User> {
+    fun getUser(request: HttpServletRequest): ResponseEntity<User> {
         logger.info("Inside GET /api/user")
-        val uid = requestBody.getAttribute("uid").toString()
+        val uid = request.getAttribute("uid").toString()
 //        val uid = (SecurityContextHolder.getContext().authentication.principal as UserDetails).username
 //        if (uid != id) logger.error("Spring Session Account does not match Spring Context Account")
         return ResponseEntity(com.projectfawkes.api.models.getUser(uid), HttpStatus.OK)
     }
 
     @PostMapping
-    fun updateUser(requestBody: HttpServletRequest): ResponseEntity<Any> {
+    fun updateUser(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Any> {
         logger.info("Inside POST /api/user")
 //        val id = sessionScopedUser!!.account!!.uid!!
 //        val uid = (SecurityContextHolder.getContext().authentication.principal as UserDetails).username
 //        if (uid != id) logger.error("Spring Session Account does not match Spring Context Account")
-        val uid = requestBody.getAttribute("uid").toString()
-        val fields = listOf(Field.FIRST_NAME, Field.LAST_NAME, Field.USERNAME, Field.DOB, Field.PASSWORD, Field.PHOTO_URL)
-        val values = Validator(fields).validate(requestBody, fields)
+        val uid = request.getAttribute("uid").toString()
+        val fields =
+            listOf(Field.FIRST_NAME, Field.LAST_NAME, Field.USERNAME, Field.DOB, Field.PASSWORD, Field.PHOTO_URL)
+        val values = Validator(fields).validate(body, fields)
         logger.info("update values: $values")
 
         val account = Account(uid, values[Field.USERNAME], null, values[Field.PHOTO_URL], null)
-        val profile = Profile(uid, values[Field.FIRST_NAME], values[Field.LAST_NAME],
-                null, values[Field.DOB])
+        val profile = Profile(
+            uid, values[Field.FIRST_NAME], values[Field.LAST_NAME],
+            null, values[Field.DOB]
+        )
         updateUser(account, profile, values[Field.PASSWORD])
         return ResponseEntity(HttpStatus.OK)
     }

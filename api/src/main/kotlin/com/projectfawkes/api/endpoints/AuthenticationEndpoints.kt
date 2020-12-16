@@ -17,10 +17,7 @@ import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.sql.Timestamp
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -39,35 +36,45 @@ class AuthenticationEndpoints {
     private val logger: Logger = LogManager.getLogger()
 
     @PutMapping(REGISTER_ENDPOINT)
-    fun register(requestBody: HttpServletRequest): ResponseEntity<Account> {
+    fun register(@RequestBody body: Map<String, String>): ResponseEntity<Account> {
         logger.info("Inside /api/register")
-        val values = Validator().validate(requestBody, listOf(Field.EMAIL, Field.PASSWORD, Field.LAST_NAME, Field.FIRST_NAME, Field.USERNAME, Field.DOB))
+        val values = Validator().validate(
+            body,
+            listOf(Field.EMAIL, Field.PASSWORD, Field.LAST_NAME, Field.FIRST_NAME, Field.USERNAME, Field.DOB)
+        )
 
-        val account = Account(null,
-                values.getValue(Field.USERNAME),
-                values.getValue(Field.EMAIL),
-                null,
-                listOf(Roles.USER.value))
-        val profile = Profile(null,
-                values.getValue(Field.FIRST_NAME),
-                values.getValue(Field.LAST_NAME),
-                Timestamp(Date().time).toString(),
-                values.getValue(Field.DOB))
+        val account = Account(
+            null,
+            values.getValue(Field.USERNAME),
+            values.getValue(Field.EMAIL),
+            null,
+            listOf(Roles.USER.value)
+        )
+        val profile = Profile(
+            null,
+            values.getValue(Field.FIRST_NAME),
+            values.getValue(Field.LAST_NAME),
+            Timestamp(Date().time).toString(),
+            values.getValue(Field.DOB)
+        )
         val accountAndToken = register(account, profile, values.getValue(Field.PASSWORD))
 
         val headers = HttpHeaders()
-        headers.add(HttpHeaders.SET_COOKIE, accountAndToken.token)
+        headers.add("x-auth-token", accountAndToken.token)
         return ResponseEntity(accountAndToken.account, headers, OK)
     }
 
     @PostMapping(AUTHENTICATE_ENDPOINT)
-    fun authenticate(requestBody: HttpServletRequest): ResponseEntity<Account> {
+    fun authenticate(@RequestBody body: Map<String, String>): ResponseEntity<Account> {
         logger.info("Inside /api/authenticate")
-        val usernameAndPassword = Validator().validate(requestBody, listOf(Field.USERNAME, Field.PASSWORD))
-        val accountAndToken = authenticateCredentials(usernameAndPassword.getValue(Field.USERNAME), usernameAndPassword.getValue(Field.PASSWORD))
+        val usernameAndPassword = Validator().validate(body, listOf(Field.USERNAME, Field.PASSWORD))
+        val accountAndToken = authenticateCredentials(
+            usernameAndPassword.getValue(Field.USERNAME),
+            usernameAndPassword.getValue(Field.PASSWORD)
+        )
 
         val headers = HttpHeaders()
-        headers.add(HttpHeaders.SET_COOKIE, accountAndToken.token)
+        headers.add("x-auth-token", accountAndToken.token)
         return ResponseEntity(accountAndToken.account, headers, OK)
     }
 
@@ -76,9 +83,10 @@ class AuthenticationEndpoints {
         // To ensure that cookies are set only on recently signed in users, check auth_time in
         // ID token before creating a cookie.
         val idToken = request.getHeader("idToken")
-        val decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+        val decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken)
         val authTimeMillis = TimeUnit.SECONDS.toMillis(
-                decodedToken.claims["auth_time"] as Long);
+            decodedToken.claims["auth_time"] as Long
+        )
 
         // Only process if the user signed in within the last 5 minutes.
         if (System.currentTimeMillis() - authTimeMillis > TimeUnit.MINUTES.toMillis(5)) {
@@ -86,14 +94,16 @@ class AuthenticationEndpoints {
         }
 
         return try {
-            val expiresIn = TimeUnit.DAYS.toMillis(1);
+            val expiresIn = TimeUnit.DAYS.toMillis(1)
             val options = SessionCookieOptions.builder()
-                    .setExpiresIn(expiresIn)
-                    .build();
+                .setExpiresIn(expiresIn)
+                .build()
             // Create the session cookie. This will also verify the ID token in the process.
             // The session cookie will have the same claims as the ID token.
             val sessionCookie = FirebaseAuth.getInstance().createSessionCookie(idToken, options)
-            response.addCookie(Cookie("session", sessionCookie))
+            val cookie = Cookie("session", sessionCookie)
+            cookie.path = "/"
+            response.addCookie(cookie)
             // Set cookie policy parameters as required.
             ResponseEntity(OK)
         } catch (e: FirebaseAuthException) {

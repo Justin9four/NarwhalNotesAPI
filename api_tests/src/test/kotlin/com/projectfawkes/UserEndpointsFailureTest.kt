@@ -6,7 +6,6 @@ import com.projectfawkes.utils.*
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.*
-import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.HttpClientErrorException
 import org.testng.annotations.AfterClass
 import org.testng.annotations.BeforeClass
@@ -54,9 +53,9 @@ class UserEndpointsFailureTest {
     }
 
     @Test(dataProvider = "createUserMissingField")
-    fun createUserMissingField(body: LinkedMultiValueMap<String, String>, validationError: ValidationError) {
+    fun createUserMissingField(body: Map<String, String>, validationError: ValidationError) {
         val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        headers.contentType = MediaType.APPLICATION_JSON
         addBasicAuthToRequest(headers)
         val request = HttpEntity(body, headers)
 
@@ -76,9 +75,8 @@ class UserEndpointsFailureTest {
     @Test
     fun createUserUnauthorized() {
         val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-        val body = LinkedMultiValueMap<String, String>()
-        val request = HttpEntity(body, headers)
+        headers.contentType = MediaType.APPLICATION_JSON
+        val request = HttpEntity(mutableMapOf<String, String>(), headers)
 
         try {
             restTemplate.exchange("$BASE_URL$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
@@ -93,18 +91,24 @@ class UserEndpointsFailureTest {
     @DataProvider(name = "createUserMissingField")
     fun createUserMissingField(): MutableIterator<Array<Any>> {
         return arrayListOf(
-                arrayOf(addBody(mapOf("username" to "username", "password" to "password")),
-                        addError(100, "A value must be provided", listOf("EMAIL", "LAST_NAME", "FIRST_NAME", "DOB"))),
-                arrayOf(addBody(mapOf("email" to "email", "password" to "password", "lastName" to "lastName", "firstName" to "firstName",
-                        "username" to "username")),
-                        addError(100, "A value must be provided", listOf("DOB")))
+            arrayOf(
+                mapOf("username" to "username", "password" to "password"),
+                addError(100, "A value must be provided", listOf("EMAIL", "LAST_NAME", "FIRST_NAME", "DOB"))
+            ),
+            arrayOf(
+                mapOf(
+                    "email" to "email", "password" to "password", "lastName" to "lastName", "firstName" to "firstName",
+                    "username" to "username"
+                ),
+                addError(100, "A value must be provided", listOf("DOB"))
+            )
         ).iterator()
     }
 
     @Test(dataProvider = "unauthorizedTest")
     fun unauthorizedTest(url: String, httpMethod: HttpMethod) {
         val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        headers.contentType = MediaType.APPLICATION_JSON
         val request = HttpEntity<String>(headers)
         try {
             restTemplate.exchange(url, httpMethod, request, String::class.java)
@@ -122,12 +126,6 @@ class UserEndpointsFailureTest {
                 arrayOf("$BASE_URL$AUTHENTICATE_ENDPOINT", HttpMethod.POST),
                 arrayOf("$BASE_URL$USER_ENDPOINT", HttpMethod.DELETE)
         ).iterator()
-    }
-
-    private fun addBody(bodyInput: Map<String, String>): LinkedMultiValueMap<String, String> {
-        val body = LinkedMultiValueMap<String, String>()
-        bodyInput.forEach { (key, value) -> body.add(key, value) }
-        return body
     }
 
     private fun addError(errorCode: Int, errorMessage: String, fields: List<String>): ValidationError {

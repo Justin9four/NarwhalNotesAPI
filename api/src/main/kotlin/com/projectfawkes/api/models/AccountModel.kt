@@ -2,7 +2,6 @@ package com.projectfawkes.api.models
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.FirebaseToken
 import com.google.firebase.auth.UserRecord
 import com.projectfawkes.api.data.AccountRepo
 import com.projectfawkes.api.data.AuthenticationRepo
@@ -13,8 +12,8 @@ import com.projectfawkes.api.dataClasses.Profile
 import com.projectfawkes.api.errorHandler.DataConflictException
 import com.projectfawkes.api.errorHandler.DataNotFoundException
 import com.projectfawkes.api.errorHandler.UnauthorizedException
-import com.projectfawkes.api.returnDTOs.AccountAndToken
-import com.projectfawkes.api.returnDTOs.User
+import com.projectfawkes.api.responseDTOs.AccountAndToken
+import com.projectfawkes.api.responseDTOs.User
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.security.crypto.bcrypt.BCrypt

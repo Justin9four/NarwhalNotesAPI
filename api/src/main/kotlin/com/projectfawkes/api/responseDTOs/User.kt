@@ -1,4 +1,4 @@
-package com.projectfawkes.api.returnDTOs
+package com.projectfawkes.api.responseDTOs
 
 import com.projectfawkes.api.dataClasses.Account
 import com.projectfawkes.api.dataClasses.Profile

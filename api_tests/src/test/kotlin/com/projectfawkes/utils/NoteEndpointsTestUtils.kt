@@ -7,8 +7,6 @@ import com.projectfawkes.responseObjects.Note
 import com.projectfawkes.responseObjects.UpdateNote
 import com.projectfawkes.restTemplate
 import org.springframework.http.*
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
 import org.springframework.web.util.UriComponentsBuilder
 
 const val NOTE_ENDPOINT = "/note"
@@ -16,11 +14,10 @@ const val NOTE_ENDPOINT = "/note"
 fun createNote(username: String, title: String, text: String? = null): String {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-    val map: MultiValueMap<String, String> = LinkedMultiValueMap()
-    map.add("title", title)
-    if (text != null) map.add("text", text)
-    val request = HttpEntity(map, headers)
+    headers.contentType = MediaType.APPLICATION_JSON
+    val body = mutableMapOf("title" to title)
+    if (text != null) body["text"] = text
+    val request = HttpEntity(body, headers)
 
     val response: ResponseEntity<String> =
         restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.PUT, request, String::class.java)
@@ -44,14 +41,13 @@ fun getNoteById(username: String, id: String): List<Note> {
 fun updateNote(username: String, updateNoteObject: UpdateNote): ResponseEntity<String> {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-    val map: MultiValueMap<String, String> = LinkedMultiValueMap()
+    headers.contentType = MediaType.APPLICATION_JSON
+    val body = mutableMapOf("id" to updateNoteObject.id)
 
-    map.add("id", updateNoteObject.id)
-    if (!updateNoteObject.title.isNullOrBlank()) map.add("title", updateNoteObject.title)
-    if (!updateNoteObject.text.isNullOrBlank()) map.add("text", updateNoteObject.text)
+    if (!updateNoteObject.title.isNullOrBlank()) body["title"] = updateNoteObject.title!!
+    if (!updateNoteObject.text.isNullOrBlank()) body["text"] = updateNoteObject.text!!
 
-    val request = HttpEntity(map, headers)
+    val request = HttpEntity(body, headers)
     return restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.POST, request, String::class.java)
 }
 
@@ -70,10 +66,9 @@ fun getNotesByCreator(username: String): List<Note> {
 fun deleteNote(username: String, id: String): ResponseEntity<String> {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
-    headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-    val map: MultiValueMap<String, String> = LinkedMultiValueMap()
-    map.add("id", id)
-    val request = HttpEntity(map, headers)
+    headers.contentType = MediaType.APPLICATION_JSON
+    val body = mutableMapOf("id" to id)
+    val request = HttpEntity(body, headers)
 
     return restTemplate.exchange(
         "$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT",

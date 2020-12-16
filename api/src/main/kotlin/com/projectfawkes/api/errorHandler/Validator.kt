@@ -1,7 +1,5 @@
 package com.projectfawkes.api.errorHandler
 
-import javax.servlet.http.HttpServletRequest
-
 enum class Field(val value: String) {
     EMAIL("email"),
     PASSWORD("password"),
@@ -28,10 +26,10 @@ class Validator(private val optionalFields: List<Field> = listOf()) {
 
     private val values = mutableMapOf<Field, String>()
 
-    fun validate(requestBody: HttpServletRequest, fields: List<Field>): Map<Field, String> {
+    fun validate(body: Map<String, String>, fields: List<Field>): Map<Field, String> {
         if (fields.isEmpty()) throw KotlinNullPointerException("Validation failed from empty validate")
         for (field in fields) {
-            val value = requestBody.getParameter(field.value)
+            val value = body[field.value]
             values[field] = value ?: ""
             when (field) {
                 Field.EMAIL -> validateEmail(value)
