@@ -6,6 +6,7 @@ import com.projectfawkes.api.dataClasses.Profile
 import com.projectfawkes.api.errorHandler.Field
 import com.projectfawkes.api.errorHandler.Validator
 import com.projectfawkes.api.models.deleteUser
+import com.projectfawkes.api.models.getUser
 import com.projectfawkes.api.models.updateUser
 import com.projectfawkes.api.responseDTOs.User
 import org.apache.logging.log4j.LogManager
@@ -31,7 +32,7 @@ class UserAccountEndpoints {
         val uid = request.getAttribute("uid").toString()
 //        val uid = (SecurityContextHolder.getContext().authentication.principal as UserDetails).username
 //        if (uid != id) logger.error("Spring Session Account does not match Spring Context Account")
-        return ResponseEntity(com.projectfawkes.api.models.getUser(uid), HttpStatus.OK)
+        return ResponseEntity(getUser(uid), HttpStatus.OK)
     }
 
     @PostMapping
@@ -62,9 +63,6 @@ class UserAccountEndpoints {
 //        val uid = (SecurityContextHolder.getContext().authentication.principal as UserDetails).username
 //        val account = getAccountByUsername(username)
         val uid = requestBody.getAttribute("uid").toString()
-        // TODO NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT NEXT
-        //  verify why this is not the working with session scope and then incorporate the correct logic everywhere
-//        if (uid != id) logger.error("Spring Session Account does not match Spring Context Account")
         deleteUser(uid)
         return ResponseEntity(HttpStatus.OK)
     }

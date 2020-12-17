@@ -32,12 +32,19 @@ class UserEndpointsTest {
         assertEqualsUser(this.user, user)
     }
 
-    @Test (dependsOnMethods = ["createUserSuccess", "getUserSuccess"])
+    @Test(dependsOnMethods = ["createUserSuccess", "getUserSuccess"])
     fun updateUserPhotoUrlByIdSuccess() {
-        // TODO Investigate whether username can be changed. It might (probably will) require Spring Security changes
-        //  if username is changed because it's something it keys off of
         this.user.photoUrl = "www.example.com"
         val userToUpdate = UpdateUser(photoUrl = this.user.photoUrl)
+
+        val response = updateUser(user.username!!, userToUpdate)
+        assertEquals(response.statusCode, HttpStatus.OK)
+    }
+
+    @Test(dependsOnMethods = ["createUserSuccess", "getUserSuccess"])
+    fun updatePasswordSuccess() {
+        password += "updated21"
+        val userToUpdate = UpdateUser(password = password)
 
         val response = updateUser(user.username!!, userToUpdate)
         assertEquals(response.statusCode, HttpStatus.OK)

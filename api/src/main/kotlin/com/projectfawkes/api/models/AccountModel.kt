@@ -71,12 +71,29 @@ fun getUser(uid: String): User {
     return User(account, profile)
 }
 
+fun getUsers(): List<User> {
+    val accounts = accountRepo.getValues(null, null).filterIsInstance<Account>()
+    val profiles = profileRepo.getValues(null, null).filterIsInstance<Profile>()
+    val users = mutableListOf<User>()
+    for (account in accounts) {
+        val profile = profiles.find { it.uid == account.uid }
+        if (profile != null) {
+            users.add(User(account, profile))
+        }
+    }
+    return users
+}
+
 fun getAccountByUsername(username: String): Account {
     return accountRepo.get("username", username) as Account
 }
 
 fun updateUser(account: Account, profile: Profile, password: String?) {
-    updateAccount(account, password)
+    var passwordHash = password
+    if (!password.isNullOrBlank()) {
+        passwordHash = BCrypt.hashpw(password, BCrypt.gensalt(10))!!
+    }
+    updateAccount(account, passwordHash)
     profileRepo.update(account.uid!!, profile.getProfileMap())
     logger.info("Successfully updated user: " + account.uid)
 }

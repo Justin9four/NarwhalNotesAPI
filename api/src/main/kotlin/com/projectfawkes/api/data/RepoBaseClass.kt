@@ -61,19 +61,31 @@ open class RepoBaseClass(private val collection: String) {
         return returnValues[0]
     }
 
-    fun getValues(field: String, value: String): MutableList<Any> {
+    fun getValues(field: String?, value: String?): MutableList<Any> {
         val returnValues = mutableListOf<Any>()
-        if (field == "id") {
-            val future = getFirebaseDB()!!.collection(collection).document(value).get()
-            if (!future.get().exists()) throw DataNotFoundException("Data not found")
-            returnValues.add(getReturnObject(future))
-        } else {
-            logger.info("getting data with field: $field and value: $value and collection: $collection")
-            val future = getFirebaseDB()!!.collection(collection).whereEqualTo(field, value).get()
-            val documents = future.get().documents
-            if (documents.isEmpty()) throw DataNotFoundException("Cannot get $field")
-            for (document in documents) {
-                returnValues.add(getReturnObject(document))
+        when {
+            field == "id" -> {
+                val future = getFirebaseDB()!!.collection(collection).document(value!!).get()
+                if (!future.get().exists()) throw DataNotFoundException("Data not found")
+                returnValues.add(getReturnObject(future))
+            }
+            field != null -> {
+                logger.info("getting data with field: $field and value: $value and collection: $collection")
+                val future = getFirebaseDB()!!.collection(collection).whereEqualTo(field, value).get()
+                val documents = future.get().documents
+                if (documents.isEmpty()) throw DataNotFoundException("Cannot get $field")
+                for (document in documents) {
+                    returnValues.add(getReturnObject(document))
+                }
+            }
+            else -> {
+                logger.info("getting all documents in collection: $collection")
+                val future = getFirebaseDB()!!.collection(collection).get()
+                val documents = future.get().documents
+                if (documents.isEmpty()) throw DataNotFoundException("No Documents Found")
+                for (document in documents) {
+                    returnValues.add(getReturnObject(document))
+                }
             }
         }
         if (returnValues.isEmpty()) {
