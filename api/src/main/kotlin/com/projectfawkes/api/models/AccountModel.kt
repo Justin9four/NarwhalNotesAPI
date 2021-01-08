@@ -71,6 +71,10 @@ fun getUser(uid: String): User {
     return User(account, profile)
 }
 
+fun getAccount(uid: String): Account {
+    return accountRepo.get("id", uid) as Account
+}
+
 fun getUsers(): List<User> {
     val accounts = accountRepo.getValues(null, null).filterIsInstance<Account>()
     val profiles = profileRepo.getValues(null, null).filterIsInstance<Profile>()

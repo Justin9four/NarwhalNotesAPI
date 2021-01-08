@@ -5,13 +5,17 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.firebase.auth.FirebaseAuth
 import com.projectfawkes.api.API_ENDPOINT
 import com.projectfawkes.api.USER_ENDPOINT
+import com.projectfawkes.api.dataClasses.Account
 import com.projectfawkes.api.dataClasses.ServiceAccount
 import com.projectfawkes.api.endpoints.AUTHENTICATE_ENDPOINT
 import com.projectfawkes.api.endpoints.CHECK_TOKEN_ENDPOINT
 import com.projectfawkes.api.endpoints.REGISTER_ENDPOINT
+import com.projectfawkes.api.endpoints.admin.ENABLE_DISABLE_ENDPOINT
+import com.projectfawkes.api.endpoints.admin.PROMOTE_ACCOUNT_ENDPOINT
 import com.projectfawkes.api.endpoints.admin.USERS_ENDPOINT
 import com.projectfawkes.api.endpoints.user.NOTE_ENDPOINT
 import com.projectfawkes.api.errorHandler.UnauthorizedException
+import com.projectfawkes.api.models.getAccount
 import com.projectfawkes.api.models.getAccountByUsername
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -23,7 +27,6 @@ import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-// TODO check Admin and User claims for permissions
 class MyInterceptor : HandlerInterceptor {
     private val logger: Logger = LogManager.getLogger()
     private val registeredServiceAccountsEnv = "RegisteredServiceAccounts"
@@ -56,11 +59,16 @@ class MyInterceptor : HandlerInterceptor {
         }
     }
 
-    private fun authenticateSession(request: HttpServletRequest) {
+    private fun authenticateSession(request: HttpServletRequest): Account {
         val sessionCookie: String? = WebUtils.getCookie(request, "session")?.value
         val uid: String = getTestUidOrNull(request.getHeader("testUsername"))
             ?: getUidFromSession(sessionCookie)
+        val account = getAccount(uid)
+        if (!account.roles!!.contains(Roles.USER.value)) {
+            throw UnauthorizedException("Session Cookie Invalid")
+        }
         request.setAttribute("uid", uid)
+        return account
     }
 
     private fun authenticateServiceAccount(request: HttpServletRequest) {
@@ -105,20 +113,32 @@ class MyInterceptor : HandlerInterceptor {
         // must return false because OPTIONS method will still enter other endpoint (PUT, POST, DELETE, etc)
         setHeaders(request, response)
         if (request.method == "OPTIONS") return false
-        val endpointsWithUserAuth = listOf(USER_ENDPOINT, USER_ENDPOINT + NOTE_ENDPOINT, USERS_ENDPOINT)
         val endpointsWithServiceAccountAuth = listOf(
             "$API_ENDPOINT$REGISTER_ENDPOINT",
             "$API_ENDPOINT$AUTHENTICATE_ENDPOINT",
             "$API_ENDPOINT$CHECK_TOKEN_ENDPOINT"
         )
+        val endpointsWithAdminAuth = listOf(
+            USERS_ENDPOINT,
+            USERS_ENDPOINT + PROMOTE_ACCOUNT_ENDPOINT,
+            USERS_ENDPOINT + ENABLE_DISABLE_ENDPOINT
+        )
+        val endpointsWithUserAuth = listOf(
+            USER_ENDPOINT,
+            USER_ENDPOINT + NOTE_ENDPOINT
+        )
         logger.info("${request.method} ${request.requestURI}")
-        if (uriMatchesEndpoint(endpointsWithUserAuth, request.requestURI)) {
-            authenticateSession(request)
-        } else if (uriMatchesEndpoint(endpointsWithServiceAccountAuth, request.requestURI)) {
-            // TODO implement Service Account Authentication
+        if (uriMatchesEndpoint(endpointsWithServiceAccountAuth, request.requestURI)) {
             authenticateServiceAccount(request)
-            logger.info("Service Account Authentication not implemented")
+        } else if (uriMatchesEndpoint(endpointsWithAdminAuth, request.requestURI)) {
+            val roles = authenticateSession(request).roles
+            if (!roles!!.contains(Roles.ADMIN.value)) {
+                throw UnauthorizedException("Session Cookie Invalid")
+            }
+        } else if (uriMatchesEndpoint(endpointsWithUserAuth, request.requestURI)) {
+            authenticateSession(request)
         }
+
         return true
     }
 }

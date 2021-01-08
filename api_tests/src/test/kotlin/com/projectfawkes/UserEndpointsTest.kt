@@ -12,7 +12,17 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 class UserEndpointsTest {
-    private val user = User(null, "testUser123", "email@example.com", null, "firstName", "lastName", null, "12 25 1996")
+    private val user = User(
+        null,
+        "testUser123",
+        "email@example.com",
+        null,
+        "firstName",
+        "lastName",
+        null,
+        "12 25 1996",
+        listOf("ROLE_USER")
+    )
     private var password = "testBabyYodaIsAwesome^2194ThisIsAPassword"
 
     @BeforeClass
@@ -91,6 +101,7 @@ class UserEndpointsTest {
         assertEquals(expectedUser.firstName, actualUser.firstName)
         assertEquals(expectedUser.lastName, actualUser.lastName)
         assertEquals(expectedUser.dob, actualUser.dob)
+        assertEquals(expectedUser.roles, actualUser.roles)
     }
 
     private fun assertEqualsAccount(expectedAccount: Account, actualAccount: Account) {

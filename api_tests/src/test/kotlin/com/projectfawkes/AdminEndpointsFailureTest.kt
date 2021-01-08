@@ -1,0 +1,3 @@
+package com.projectfawkes
+
+class AdminEndpointsFailureTest
