@@ -39,8 +39,7 @@ fun getAccountAndToken(field: String, value: String): AccountAndToken {
     return AccountAndToken(account, customAuthToken)
 }
 
-fun authenticateCredentials(username: String, password: String): AccountAndToken
-{
+fun authenticateCredentials(username: String, password: String): AccountAndToken {
     return try {
         val authentication = AuthenticationRepo().get("username", username) as Authentication
         if (!BCrypt.checkpw(password, authentication.password)) {
@@ -53,8 +52,7 @@ fun authenticateCredentials(username: String, password: String): AccountAndToken
     }
 }
 
-fun authenticateToken(token: String): AccountAndToken
-{
+fun authenticateToken(token: String): AccountAndToken {
     return try {
         val decodedToken = FirebaseAuth.getInstance().verifyIdToken(token)
         val uid = decodedToken.uid
@@ -75,9 +73,10 @@ fun getAccount(uid: String): Account {
     return accountRepo.get("id", uid) as Account
 }
 
-fun getUsers(): List<User> {
-    val accounts = accountRepo.getValues(null, null).filterIsInstance<Account>()
-    val profiles = profileRepo.getValues(null, null).filterIsInstance<Profile>()
+fun getUsers(uid: String?): List<User> {
+    val field = if (!uid.isNullOrBlank()) "id" else null
+    val accounts = accountRepo.getValues(field, uid).filterIsInstance<Account>()
+    val profiles = profileRepo.getValues(field, uid).filterIsInstance<Profile>()
     val users = mutableListOf<User>()
     for (account in accounts) {
         val profile = profiles.find { it.uid == account.uid }
@@ -111,11 +110,11 @@ fun deleteUser(id: String) {
 private fun createAccount(account: Account, passwordHash: String): String {
     accountRepo.create(account.uid!!, account.getAccountMap(passwordHash))
     val request = UserRecord.CreateRequest()
-            .setEmail(account.email)
-            .setEmailVerified(false)
-            .setDisplayName(account.username)
-            .setDisabled(false)
-            .setUid(account.uid)
+        .setEmail(account.email)
+        .setEmailVerified(false)
+        .setDisplayName(account.username)
+        .setDisabled(false)
+        .setUid(account.uid)
     val userRecord: UserRecord
     try {
         userRecord = FirebaseAuth.getInstance().createUser(request)

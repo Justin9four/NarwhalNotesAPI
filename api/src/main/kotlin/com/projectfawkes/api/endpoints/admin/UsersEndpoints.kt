@@ -7,6 +7,8 @@ import com.projectfawkes.api.dataClasses.Profile
 import com.projectfawkes.api.models.getUsers
 import com.projectfawkes.api.models.updateUser
 import com.projectfawkes.api.responseDTOs.User
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -20,11 +22,16 @@ const val ENABLE_DISABLE_ENDPOINT = "/enable-disable"
 @RestController
 @RequestMapping(USERS_ENDPOINT)
 class UsersEndpoints {
+    private val logger: Logger = LogManager.getLogger()
+
     @GetMapping
     fun getUsers(request: HttpServletRequest): ResponseEntity<List<User>> {
+        logger.info("Inside POST /api/users/promoteAccount")
         // get information about requested users
-        // if no query params or ids provided all users retrieved
-        val users = getUsers()
+        // if no uid provided all users retrieved
+        logger.info("Querying user with id: ${request.getParameter("uid")}")
+        // add in additional query params
+        val users = getUsers(request.getParameter("uid"))
         return ResponseEntity(users, HttpStatus.OK)
     }
 
@@ -37,6 +44,7 @@ class UsersEndpoints {
     @PostMapping(PROMOTE_ACCOUNT_ENDPOINT)
     fun promoteAccount(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
         // the way a normal user becomes an ADMIN
+        logger.info("Inside POST /api/users/promoteAccount")
         val account = Account(body["uid"], null, null, null, listOf(Roles.ADMIN.value, Roles.USER.value))
         val profile = Profile(body["uid"], null, null, null, null)
         updateUser(account, profile, null)

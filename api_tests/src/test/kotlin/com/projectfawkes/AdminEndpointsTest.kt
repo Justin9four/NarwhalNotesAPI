@@ -12,6 +12,7 @@ import org.testng.annotations.AfterClass
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class AdminEndpointsTest {
     private val logger: Logger = LogManager.getLogger()
@@ -69,15 +70,17 @@ class AdminEndpointsTest {
 
     @Test
     fun getUsersSuccess() {
-        val users = getUsers("testAdmin")
+        val users = getUsers("testMaster", null)
         print(users)
     }
 
     @Test
     fun promoteAccountSuccess() {
-        val response = promoteAccount("TODO put test admin username here", account1Uid)
+        val response = promoteAccount("testMaster", account1Uid)
         assertEquals(response.statusCode, HttpStatus.OK)
-        val users = getUsers(user1.username!!)
+        val users = getUsers(user1.username!!, account1Uid)
         print(users)
+        assertEquals(users.size, 1)
+        assertNotNull(users[0].roles!!.find { it == "ROLE_ADMIN" })
     }
 }
