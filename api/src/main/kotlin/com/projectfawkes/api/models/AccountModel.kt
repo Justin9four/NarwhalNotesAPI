@@ -14,6 +14,7 @@ import com.projectfawkes.api.errorHandler.DataNotFoundException
 import com.projectfawkes.api.errorHandler.UnauthorizedException
 import com.projectfawkes.api.responseDTOs.AccountAndToken
 import com.projectfawkes.api.responseDTOs.User
+import com.projectfawkes.api.responseDTOs.UserComplete
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.security.crypto.bcrypt.BCrypt
@@ -73,18 +74,29 @@ fun getAccount(uid: String): Account {
     return accountRepo.get("id", uid) as Account
 }
 
-fun getUsers(uid: String?): List<User> {
+fun getUsers(uid: String?): List<UserComplete> {
     val field = if (!uid.isNullOrBlank()) "id" else null
     val accounts = accountRepo.getValues(field, uid).filterIsInstance<Account>()
     val profiles = profileRepo.getValues(field, uid).filterIsInstance<Profile>()
-    val users = mutableListOf<User>()
+    val users = mutableListOf<UserComplete>()
     for (account in accounts) {
         val profile = profiles.find { it.uid == account.uid }
+        val enabled = !FirebaseAuth.getInstance().getUser(account.uid).isDisabled
         if (profile != null) {
-            users.add(User(account, profile))
+            users.add(UserComplete(account, profile, enabled))
         }
     }
     return users
+}
+
+fun enableDisableAccount(uid: String, enabled: Boolean) {
+    val request = UserRecord.UpdateRequest(uid)
+    request.setDisabled(!enabled)
+    try {
+        FirebaseAuth.getInstance().updateUser(request)
+    } catch (e: FirebaseAuthException) {
+        throw DataNotFoundException("User $uid Firebase error", e)
+    }
 }
 
 fun getAccountByUsername(username: String): Account {

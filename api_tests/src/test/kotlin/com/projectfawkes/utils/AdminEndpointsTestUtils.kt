@@ -3,15 +3,16 @@ package com.projectfawkes.utils
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectfawkes.BASE_URL
-import com.projectfawkes.responseObjects.User
+import com.projectfawkes.responseObjects.CompleteUser
 import com.projectfawkes.restTemplate
 import org.springframework.http.*
 import org.springframework.web.util.UriComponentsBuilder
 
 const val USERS_ENDPOINT = "/users"
-const val PROMOTE_ACCOUNT_ENDPOINT = "/promoteAccount"
+const val PROMOTE_DEMOTE_ENDPOINT = "/promote-demote"
+const val ENABLE_DISABLE_ENDPOINT = "/enable-disable"
 
-fun getUsers(username: String, uid: String?): List<User> {
+fun getUsers(username: String, uid: String?): List<CompleteUser> {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
     val request: HttpEntity<String> = HttpEntity(headers)
@@ -24,15 +25,30 @@ fun getUsers(username: String, uid: String?): List<User> {
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
-fun promoteAccount(username: String, accountUID: String): ResponseEntity<String> {
+fun promoteDemoteAccount(username: String, accountUID: String, promoted: Boolean): ResponseEntity<String> {
     val headers = HttpHeaders()
     headers.contentType = MediaType.APPLICATION_JSON
     headers.set("testUsername", username)
-    val body = mutableMapOf("uid" to accountUID)
+    val body = mutableMapOf("uid" to accountUID, "promoted" to promoted)
 
     val request = HttpEntity(body, headers)
     return restTemplate.exchange(
-        "$BASE_URL$USERS_ENDPOINT$PROMOTE_ACCOUNT_ENDPOINT",
+        "$BASE_URL$USERS_ENDPOINT$PROMOTE_DEMOTE_ENDPOINT",
+        HttpMethod.POST,
+        request,
+        String::class.java
+    )
+}
+
+fun enableDisableAccount(username: String, accountUID: String, enabled: Boolean): ResponseEntity<String> {
+    val headers = HttpHeaders()
+    headers.contentType = MediaType.APPLICATION_JSON
+    headers.set("testUsername", username)
+    val body = mutableMapOf("uid" to accountUID, "enabled" to enabled)
+
+    val request = HttpEntity(body, headers)
+    return restTemplate.exchange(
+        "$BASE_URL$USERS_ENDPOINT$ENABLE_DISABLE_ENDPOINT",
         HttpMethod.POST,
         request,
         String::class.java

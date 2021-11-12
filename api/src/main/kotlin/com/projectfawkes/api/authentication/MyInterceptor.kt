@@ -11,7 +11,7 @@ import com.projectfawkes.api.endpoints.AUTHENTICATE_ENDPOINT
 import com.projectfawkes.api.endpoints.CHECK_TOKEN_ENDPOINT
 import com.projectfawkes.api.endpoints.REGISTER_ENDPOINT
 import com.projectfawkes.api.endpoints.admin.ENABLE_DISABLE_ENDPOINT
-import com.projectfawkes.api.endpoints.admin.PROMOTE_ACCOUNT_ENDPOINT
+import com.projectfawkes.api.endpoints.admin.PROMOTE_DEMOTE_ENDPOINT
 import com.projectfawkes.api.endpoints.admin.USERS_ENDPOINT
 import com.projectfawkes.api.endpoints.user.NOTE_ENDPOINT
 import com.projectfawkes.api.errorHandler.UnauthorizedException
@@ -63,6 +63,8 @@ class MyInterceptor : HandlerInterceptor {
         val sessionCookie: String? = WebUtils.getCookie(request, "session")?.value
         val uid: String = getTestUidOrNull(request.getHeader("testUsername"))
             ?: getUidFromSession(sessionCookie)
+        val userRecord = FirebaseAuth.getInstance().getUser(uid)
+        if (userRecord.isDisabled) throw UnauthorizedException("Account disabled")
         val account = getAccount(uid)
         if (!account.roles!!.contains(Roles.USER.value)) {
             throw UnauthorizedException("Session Cookie Invalid")
@@ -120,12 +122,12 @@ class MyInterceptor : HandlerInterceptor {
         )
         val endpointsWithAdminAuth = listOf(
             USERS_ENDPOINT,
-            USERS_ENDPOINT + PROMOTE_ACCOUNT_ENDPOINT,
-            USERS_ENDPOINT + ENABLE_DISABLE_ENDPOINT
+            "$USERS_ENDPOINT$PROMOTE_DEMOTE_ENDPOINT",
+            "$USERS_ENDPOINT$ENABLE_DISABLE_ENDPOINT"
         )
         val endpointsWithUserAuth = listOf(
             USER_ENDPOINT,
-            USER_ENDPOINT + NOTE_ENDPOINT
+            "$USER_ENDPOINT$NOTE_ENDPOINT"
         )
         logger.info("${request.method} ${request.requestURI}")
         if (uriMatchesEndpoint(endpointsWithServiceAccountAuth, request.requestURI)) {

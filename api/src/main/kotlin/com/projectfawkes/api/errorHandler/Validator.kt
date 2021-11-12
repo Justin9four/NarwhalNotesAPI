@@ -9,8 +9,11 @@ enum class Field(val value: String) {
     DOB("dob"),
     TITLE("title"),
     TEXT("text"),
+    UID("uid"),
     ID("id"),
-    PHOTO_URL("photoUrl")
+    PHOTO_URL("photoUrl"),
+    ENABLED("enabled"),
+    PROMOTED("promoted")
 }
 
 data class ValidationError(val errorCode: Int, val details: ValidationErrorDetails) {
@@ -23,6 +26,7 @@ data class ValidationErrorDetails(val errorMessage: String, val fields: MutableL
 
 class Validator(private val optionalFields: List<Field> = listOf()) {
     private val valueMustBeProvidedError = ValidationError(100, ValidationErrorDetails("A value must be provided"))
+    private val valueFormatIncorrectError = ValidationError(101, ValidationErrorDetails("Invalid format"))
 
     private val values = mutableMapOf<Field, String>()
 
@@ -38,9 +42,12 @@ class Validator(private val optionalFields: List<Field> = listOf()) {
                 Field.LAST_NAME -> validateLastName(value)
                 Field.USERNAME -> validateUsername(value)
                 Field.DOB -> validateDOB(value)
+                Field.ENABLED -> validateBoolean(field, value)
+                Field.PROMOTED -> validateBoolean(field, value)
                 Field.TITLE -> ifFieldNullOrBlank(field, value)
                 Field.TEXT -> ifFieldNullOrBlank(field, value)
                 Field.ID -> ifFieldNullOrBlank(field, value)
+                Field.UID -> ifFieldNullOrBlank(field, value)
                 Field.PHOTO_URL -> ifFieldNullOrBlank(field, value)
             }
         }
@@ -75,6 +82,13 @@ class Validator(private val optionalFields: List<Field> = listOf()) {
         ifFieldNullOrBlank(Field.EMAIL, value)
     }
 
+    private fun validateBoolean(field: Field, value: String?) {
+        ifFieldNullOrBlank(field, value)
+        if (!value.equals("true", true) && !value.equals("false", true)) {
+            valueFormatIncorrectError.details.fields.add(field)
+        }
+    }
+
     private fun ifFieldNullOrBlank(field: Field, value: String?) {
         if (value.isNullOrBlank()) {
             if (optionalFields.contains(field)) {
@@ -90,6 +104,8 @@ class Validator(private val optionalFields: List<Field> = listOf()) {
         val validationErrors: MutableList<ValidationError> = mutableListOf()
         if (valueMustBeProvidedError.checkIfActive()) {
             validationErrors.add(valueMustBeProvidedError)
+        } else if (valueFormatIncorrectError.checkIfActive()) {
+            validationErrors.add(valueFormatIncorrectError)
         }
         return validationErrors
     }
