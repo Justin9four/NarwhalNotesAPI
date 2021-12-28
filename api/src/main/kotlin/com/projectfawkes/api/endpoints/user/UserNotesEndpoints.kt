@@ -1,6 +1,8 @@
 package com.projectfawkes.api.endpoints.user
 
+import com.projectfawkes.api.AuthType
 import com.projectfawkes.api.USER_ENDPOINT
+import com.projectfawkes.api.UseAuth
 import com.projectfawkes.api.dataClasses.Note
 import com.projectfawkes.api.errorHandler.*
 import com.projectfawkes.api.models.createNote
@@ -20,6 +22,7 @@ const val SYNC_PUSHER_ENDPOINT = "/pusher"
 
 @RestController
 @RequestMapping(USER_ENDPOINT)
+@UseAuth(AuthType.USER)
 class UserNotesEndpoints {
     private val logger: Logger = LogManager.getLogger()
 

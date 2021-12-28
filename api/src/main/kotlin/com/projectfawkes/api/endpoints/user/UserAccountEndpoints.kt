@@ -1,6 +1,8 @@
 package com.projectfawkes.api.endpoints.user
 
+import com.projectfawkes.api.AuthType
 import com.projectfawkes.api.USER_ENDPOINT
+import com.projectfawkes.api.UseAuth
 import com.projectfawkes.api.dataClasses.Account
 import com.projectfawkes.api.dataClasses.Profile
 import com.projectfawkes.api.errorHandler.Field
@@ -19,6 +21,7 @@ import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping(USER_ENDPOINT)
+@UseAuth(AuthType.USER)
 class UserAccountEndpoints {
     private val logger: Logger = LogManager.getLogger()
 

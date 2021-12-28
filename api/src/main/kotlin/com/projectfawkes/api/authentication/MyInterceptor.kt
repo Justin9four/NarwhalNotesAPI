@@ -3,17 +3,10 @@ package com.projectfawkes.api.authentication
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.firebase.auth.FirebaseAuth
-import com.projectfawkes.api.API_ENDPOINT
-import com.projectfawkes.api.USER_ENDPOINT
+import com.projectfawkes.api.AuthType
+import com.projectfawkes.api.UseAuth
 import com.projectfawkes.api.dataClasses.Account
 import com.projectfawkes.api.dataClasses.ServiceAccount
-import com.projectfawkes.api.endpoints.AUTHENTICATE_ENDPOINT
-import com.projectfawkes.api.endpoints.CHECK_TOKEN_ENDPOINT
-import com.projectfawkes.api.endpoints.REGISTER_ENDPOINT
-import com.projectfawkes.api.endpoints.admin.ENABLE_DISABLE_ENDPOINT
-import com.projectfawkes.api.endpoints.admin.PROMOTE_DEMOTE_ENDPOINT
-import com.projectfawkes.api.endpoints.admin.USERS_ENDPOINT
-import com.projectfawkes.api.endpoints.user.NOTE_ENDPOINT
 import com.projectfawkes.api.errorHandler.UnauthorizedException
 import com.projectfawkes.api.models.getAccount
 import com.projectfawkes.api.models.getAccountByUsername
@@ -21,6 +14,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpHeaders
 import org.springframework.security.crypto.bcrypt.BCrypt
+import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.util.WebUtils
 import java.util.*
@@ -95,10 +89,6 @@ class MyInterceptor : HandlerInterceptor {
         }
     }
 
-    private fun uriMatchesEndpoint(endpointWhitelist: List<String>, uri: String): Boolean {
-        return endpointWhitelist.any { it == uri || "$it/" == uri }
-    }
-
     private fun setHeaders(request: HttpServletRequest, response: HttpServletResponse) {
         // TODO Only set Access-Control-Allow-Origin like this for DEV not PROD
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
@@ -115,32 +105,24 @@ class MyInterceptor : HandlerInterceptor {
         // must return false because OPTIONS method will still enter other endpoint (PUT, POST, DELETE, etc)
         setHeaders(request, response)
         if (request.method == "OPTIONS") return false
-        val endpointsWithServiceAccountAuth = listOf(
-            "$API_ENDPOINT$REGISTER_ENDPOINT",
-            "$API_ENDPOINT$AUTHENTICATE_ENDPOINT",
-            "$API_ENDPOINT$CHECK_TOKEN_ENDPOINT"
-        )
-        val endpointsWithAdminAuth = listOf(
-            USERS_ENDPOINT,
-            "$USERS_ENDPOINT$PROMOTE_DEMOTE_ENDPOINT",
-            "$USERS_ENDPOINT$ENABLE_DISABLE_ENDPOINT"
-        )
-        val endpointsWithUserAuth = listOf(
-            USER_ENDPOINT,
-            "$USER_ENDPOINT$NOTE_ENDPOINT"
-        )
-        logger.info("${request.method} ${request.requestURI}")
-        if (uriMatchesEndpoint(endpointsWithServiceAccountAuth, request.requestURI)) {
-            authenticateServiceAccount(request)
-        } else if (uriMatchesEndpoint(endpointsWithAdminAuth, request.requestURI)) {
-            val roles = authenticateSession(request).roles
-            if (!roles!!.contains(Roles.ADMIN.value)) {
-                throw UnauthorizedException("Session Cookie Invalid")
-            }
-        } else if (uriMatchesEndpoint(endpointsWithUserAuth, request.requestURI)) {
-            authenticateSession(request)
-        }
+        // cannot determine authType
+        if (handler !is HandlerMethod) return false
 
+        val authType =
+            handler.getMethodAnnotation(UseAuth::class.java)?.authType
+                ?: handler.method.declaringClass.getAnnotation(UseAuth::class.java)?.authType!!
+        logger.info("${request.method} ${request.requestURI} ($authType)")
+        when (authType) {
+            AuthType.SERVICEACCOUNT -> authenticateServiceAccount(request)
+            AuthType.ADMIN -> {
+                val roles = authenticateSession(request).roles
+                if (!roles!!.contains(Roles.ADMIN.value)) {
+                    throw UnauthorizedException("Session Cookie Invalid")
+                }
+            }
+            AuthType.USER -> authenticateSession(request)
+            AuthType.PUBLIC -> {}
+        }
         return true
     }
 }
