@@ -1,8 +1,8 @@
 package com.projectfawkes.api.endpoints
 
 import com.projectfawkes.api.API_ENDPOINT
-import com.projectfawkes.api.AuthType
-import com.projectfawkes.api.UseAuth
+import com.projectfawkes.api.authentication.AuthType
+import com.projectfawkes.api.authentication.UseAuth
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

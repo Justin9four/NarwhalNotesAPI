@@ -1,9 +1,9 @@
 package com.projectfawkes.api.endpoints.admin
 
 import com.projectfawkes.api.API_ENDPOINT
-import com.projectfawkes.api.AuthType
-import com.projectfawkes.api.UseAuth
+import com.projectfawkes.api.authentication.AuthType
 import com.projectfawkes.api.authentication.Roles
+import com.projectfawkes.api.authentication.UseAuth
 import com.projectfawkes.api.dataClasses.Account
 import com.projectfawkes.api.dataClasses.Profile
 import com.projectfawkes.api.errorHandler.Field

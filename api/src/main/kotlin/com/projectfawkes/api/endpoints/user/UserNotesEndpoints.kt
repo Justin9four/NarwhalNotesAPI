@@ -1,8 +1,8 @@
 package com.projectfawkes.api.endpoints.user
 
-import com.projectfawkes.api.AuthType
 import com.projectfawkes.api.USER_ENDPOINT
-import com.projectfawkes.api.UseAuth
+import com.projectfawkes.api.authentication.AuthType
+import com.projectfawkes.api.authentication.UseAuth
 import com.projectfawkes.api.dataClasses.Note
 import com.projectfawkes.api.errorHandler.*
 import com.projectfawkes.api.models.createNote

@@ -1,4 +1,4 @@
-package com.projectfawkes.api
+package com.projectfawkes.api.authentication
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class UseAuth(val authType: AuthType)
