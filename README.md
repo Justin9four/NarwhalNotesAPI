@@ -1,4 +1,4 @@
-# Project Fawkes API
+# Narwhal Notes API
 The API managing all backend data and which allows front-end Service Accounts to interact with a centralized server component.
 
 Written in the Kotlin programming language, using Maven as 
