@@ -29,7 +29,7 @@ exports.addNote = functions.https.onRequest((request, response) => {
     if (typeof request.headers.origin !== 'undefined')
 response.setHeader('Access-Control-Allow-Origin', request.headers.origin);
 else
-response.setHeader('Access-Control-Allow-Origin', "http://localhost:3000");
+response.setHeader('Access-Control-Allow-Origin', "https://api.chandlerpod.com");
 response.setHeader('Access-Control-Allow-Credentials', true);
 
 var id = generateQuickGuid();

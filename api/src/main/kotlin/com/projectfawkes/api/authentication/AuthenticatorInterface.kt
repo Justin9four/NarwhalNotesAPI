@@ -10,13 +10,14 @@ import com.projectfawkes.api.models.getAccount
 import org.apache.logging.log4j.Logger
 import org.springframework.security.crypto.bcrypt.BCrypt
 import org.springframework.web.util.WebUtils
-import java.security.Permissions
 import java.util.*
 import javax.servlet.http.HttpServletRequest
+
 
 interface AuthenticatorInterface {
     val logger: Logger
     val registeredServiceAccountsEnv: String
+    val host: String
 
     fun getUidFromSession(request: HttpServletRequest): String {
         // TIP for client. Might need to do some CSRF work
@@ -67,11 +68,5 @@ interface AuthenticatorInterface {
         } catch (e: IllegalArgumentException) {
             throw UnauthorizedException("Unauthenticated Service Account")
         }
-    }
-
-    // consumes uid and see if the session is still active and the user has the required permission for
-    // the function
-    fun isAuthorized(uid: String, requiredPermissions: Permissions): Boolean {
-        return true
     }
 }

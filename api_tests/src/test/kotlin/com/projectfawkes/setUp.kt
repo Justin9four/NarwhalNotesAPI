@@ -13,7 +13,7 @@ import java.nio.charset.Charset
 import java.util.*
 import kotlin.system.exitProcess
 
-var BASE_URL = "http://localhost:8080/api"
+var BASE_URL = "https://api.chandlerpod.com/api"
 val restTemplate = RestTemplate()
 private val logger: Logger = LogManager.getLogger()
 

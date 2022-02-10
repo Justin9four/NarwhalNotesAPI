@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest
 class AuthenticatorDev : AuthenticatorInterface {
     override val logger: Logger = LogManager.getLogger()
     override val registeredServiceAccountsEnv = "RegisteredServiceAccounts"
+    override val host = "http://localhost:3000"
 
     override fun getUidFromSession(request: HttpServletRequest): String {
         val testUsername = request.getHeader("testUsername")

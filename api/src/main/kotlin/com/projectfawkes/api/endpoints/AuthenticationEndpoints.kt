@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.util.WebUtils
 import java.sql.Timestamp
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -31,6 +32,7 @@ import javax.servlet.http.HttpServletResponse
 const val AUTHENTICATE_ENDPOINT = "/authenticate"
 const val REGISTER_ENDPOINT = "/register"
 const val CHECK_TOKEN_ENDPOINT = "/checkToken"
+const val SIGN_OUT_ENDPOINT = "/signOut"
 
 @RestController
 @RequestMapping(API_ENDPOINT)
@@ -79,6 +81,22 @@ class AuthenticationEndpoints {
         val headers = HttpHeaders()
         headers.add("x-auth-token", accountAndToken.token)
         return ResponseEntity(accountAndToken.account, headers, OK)
+    }
+
+    @PostMapping(SIGN_OUT_ENDPOINT)
+    fun signOut(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<Any> {
+        val sessionCookie = WebUtils.getCookie(request, "session")
+        return try {
+            val decodedToken = FirebaseAuth.getInstance().verifySessionCookie(sessionCookie?.value)
+            FirebaseAuth.getInstance().revokeRefreshTokens(decodedToken.uid)
+            val newCookie = Cookie("session", "")
+            newCookie.maxAge = 0
+            newCookie.path = "/"
+            response.addCookie(newCookie)
+            ResponseEntity(OK)
+        } catch (e: FirebaseAuthException) {
+            throw UnauthorizedException("Failed to create a session cookie")
+        }
     }
 
     @PostMapping(CHECK_TOKEN_ENDPOINT)

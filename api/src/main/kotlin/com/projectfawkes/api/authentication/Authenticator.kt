@@ -9,4 +9,5 @@ import org.springframework.stereotype.Component
 class Authenticator : AuthenticatorInterface {
     override val logger: Logger = LogManager.getLogger()
     override val registeredServiceAccountsEnv = "RegisteredServiceAccounts"
+    override val host = "https://chandlerpod.com"
 }

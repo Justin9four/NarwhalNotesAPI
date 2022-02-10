@@ -14,8 +14,7 @@ class MyInterceptor : HandlerInterceptor {
     private val authenticator = authenticatorFactory()
 
     private fun setHeaders(request: HttpServletRequest, response: HttpServletResponse) {
-        // TODO Only set Access-Control-Allow-Origin like this for DEV not PROD
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
+        response.setHeader("Access-Control-Allow-Origin", authenticator.host)
         response.setHeader("Access-Control-Allow-Credentials", "true")
         response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "x-auth-token")
         if (request.method == "OPTIONS") {
