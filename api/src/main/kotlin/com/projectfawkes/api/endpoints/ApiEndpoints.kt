@@ -18,7 +18,14 @@ class ApiEndpoints {
     @UseAuth(AuthType.PUBLIC)
     fun getApiHomepage(httpServletResponse: HttpServletResponse): ResponseEntity<Any> {
         val gitHubLink = "<a href=\"https://github.com/Justin9four/NarwhalNotesAPI\">GitHub Repository</a>"
-        val body = "Welcome to the Project Fawkes API <br/> This project is currently under \uD83D\uDC77construction\uD83D\uDC77. Please refer to my $gitHubLink for information or if you would like to contribute.<br/> An API Reference site is also in the works to replace this page."
+        val body =
+            "Welcome to the Project Fawkes API <br/> This project is currently under \uD83D\uDC77construction\uD83D\uDC77. Please refer to my $gitHubLink for information or if you would like to contribute.<br/> An API Reference site is also in the works to replace this page."
         return ResponseEntity(body, HttpStatus.OK)
+    }
+
+    @GetMapping("**")
+    @UseAuth(AuthType.PUBLIC)
+    fun routeNotFound(httpServletResponse: HttpServletResponse) {
+        httpServletResponse.sendRedirect("/error")
     }
 }

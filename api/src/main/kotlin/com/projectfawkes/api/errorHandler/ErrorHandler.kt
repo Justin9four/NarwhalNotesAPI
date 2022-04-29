@@ -1,16 +1,17 @@
 package com.projectfawkes.api.errorHandler
 
 import com.projectfawkes.api.API_ENDPOINT
+import com.projectfawkes.api.authentication.AuthType
+import com.projectfawkes.api.authentication.UseAuth
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import javax.servlet.http.HttpServletResponse
 
 const val ERROR_ENDPOINT = "/error"
 
 @RestController
-@RequestMapping("/")
+@UseAuth(AuthType.PUBLIC)
 class ErrorHandler : ErrorController {
 
     @GetMapping(ERROR_ENDPOINT)
