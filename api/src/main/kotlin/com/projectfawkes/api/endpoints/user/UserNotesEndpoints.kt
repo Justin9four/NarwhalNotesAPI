@@ -62,26 +62,27 @@ class UserNotesEndpoints {
         return ResponseEntity(HttpStatus.OK)
     }
 
+    @GetMapping("$NOTE_ENDPOINT/{id}")
+    fun getNoteById(request: HttpServletRequest, @PathVariable id: String): ResponseEntity<Note> {
+        val creator = request.getAttribute("uid").toString()
+        val notes = getNotes("id", id)
+        when {
+            notes.size > 1 -> throw DataConflictException(noteIDNotUnique)
+            notes.isEmpty() -> throw DataNotFoundException("Note not found by id:$id")
+            notes[0].creator != creator -> throw UnauthorizedException("Cannot query someone else's note")
+        }
+        return ResponseEntity(notes[0], HttpStatus.OK)
+    }
+
     @GetMapping(NOTE_ENDPOINT)
     fun getNotes(request: HttpServletRequest): ResponseEntity<List<Note>> {
         val creator = request.getAttribute("uid").toString()
-        val id = request.getParameter("id")
-        val field = if (!id.isNullOrBlank()) "id" else "creator"
-        val value = id ?: creator
-        val notes = getNotes(field, value)
-        if (field == "id") {
-            when {
-                notes.size > 1 -> throw DataConflictException(noteIDNotUnique)
-                notes.isEmpty() -> throw DataNotFoundException("Note not found by $field:$value")
-                notes[0].creator != creator -> throw UnauthorizedException("Cannot query someone else's note")
-            }
-        }
+        val notes = getNotes("creator", creator)
         return ResponseEntity(notes, HttpStatus.OK)
     }
 
-    @DeleteMapping(NOTE_ENDPOINT)
-    fun deleteNote(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Any> {
-        val id = body["id"]!!
+    @DeleteMapping("$NOTE_ENDPOINT/{id}")
+    fun deleteNote(request: HttpServletRequest, @PathVariable id: String): ResponseEntity<Any> {
         val uid = request.getAttribute("uid").toString()
         val notes = getNotes("id", id)
         if (notes[0].creator != uid) throw UnauthorizedException("Cannot delete someone else's note")
