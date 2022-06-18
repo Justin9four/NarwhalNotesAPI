@@ -26,13 +26,12 @@ fun createNote(username: String, title: String, text: String? = null): String {
     return note.id
 }
 
-fun getNoteById(username: String, id: String): List<Note> {
+fun getNoteById(username: String, id: String): Note {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
     val request: HttpEntity<String> = HttpEntity(headers)
     val builder: UriComponentsBuilder = UriComponentsBuilder
-        .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
-        .queryParam("id", id)
+        .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT/$id")
     val response: ResponseEntity<String> =
         restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
     return jacksonObjectMapper().readValue(response.body ?: "")
@@ -55,10 +54,8 @@ fun getNotesByCreator(username: String): List<Note> {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
     val request: HttpEntity<String> = HttpEntity(headers)
-    val builder: UriComponentsBuilder = UriComponentsBuilder
-        .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT")
     val response: ResponseEntity<String> =
-        restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
+        restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.GET, request, String::class.java)
 
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
@@ -67,11 +64,10 @@ fun deleteNote(username: String, id: String): ResponseEntity<String> {
     val headers = HttpHeaders()
     headers.set("testUsername", username)
     headers.contentType = MediaType.APPLICATION_JSON
-    val body = mutableMapOf("id" to id)
-    val request = HttpEntity(body, headers)
+    val request: HttpEntity<String> = HttpEntity(headers)
 
     return restTemplate.exchange(
-        "$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT",
+        "$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT/$id",
         HttpMethod.DELETE,
         request,
         String::class.java

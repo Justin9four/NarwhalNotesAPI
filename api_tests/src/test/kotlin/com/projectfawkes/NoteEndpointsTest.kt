@@ -54,10 +54,8 @@ class NoteEndpointsTest {
 
     @Test(dependsOnMethods = ["createNoteSuccess"], priority = 1)
     fun getNoteByIdSuccess() {
-        val notes = getNoteById(username, ids[0])
-        val note = notes[0]
+        val note = getNoteById(username, ids[0])
 
-        assertEquals(notes.size, 1, "More than one note returned by ID")
         assertEquals(title, note.title)
         assertEquals(creator, note.creator)
         assertEquals(text, note.text)

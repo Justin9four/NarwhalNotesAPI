@@ -141,7 +141,7 @@ class NoteEndpointsFailureTest {
                 String::class.java
             )
         } catch (e: HttpClientErrorException) {
-            if (e.statusCode != HttpStatus.BAD_REQUEST) {
+            if (e.statusCode != HttpStatus.METHOD_NOT_ALLOWED) {
                 fail()
             }
         }
