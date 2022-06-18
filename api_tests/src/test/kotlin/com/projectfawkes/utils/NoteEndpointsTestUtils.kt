@@ -3,13 +3,12 @@ package com.projectfawkes.utils
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectfawkes.BASE_URL
+import com.projectfawkes.api.controller.NOTES_ENDPOINT
 import com.projectfawkes.responseObjects.Note
 import com.projectfawkes.responseObjects.UpdateNote
 import com.projectfawkes.restTemplate
 import org.springframework.http.*
 import org.springframework.web.util.UriComponentsBuilder
-
-const val NOTE_ENDPOINT = "/note"
 
 fun createNote(username: String, title: String, text: String? = null): String {
     val headers = HttpHeaders()
@@ -20,7 +19,7 @@ fun createNote(username: String, title: String, text: String? = null): String {
     val request = HttpEntity(body, headers)
 
     val response: ResponseEntity<String> =
-        restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+        restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.PUT, request, String::class.java)
     val note: Note = jacksonObjectMapper().readValue(response.body ?: "")
 
     return note.id
@@ -31,7 +30,7 @@ fun getNoteById(username: String, id: String): Note {
     headers.set("testUsername", username)
     val request: HttpEntity<String> = HttpEntity(headers)
     val builder: UriComponentsBuilder = UriComponentsBuilder
-        .fromHttpUrl("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT/$id")
+        .fromHttpUrl("$BASE_URL$NOTES_ENDPOINT/$id")
     val response: ResponseEntity<String> =
         restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, String::class.java)
     return jacksonObjectMapper().readValue(response.body ?: "")
@@ -47,7 +46,7 @@ fun updateNote(username: String, updateNoteObject: UpdateNote): ResponseEntity<S
     if (!updateNoteObject.text.isNullOrBlank()) body["text"] = updateNoteObject.text!!
 
     val request = HttpEntity(body, headers)
-    return restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.POST, request, String::class.java)
+    return restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.POST, request, String::class.java)
 }
 
 fun getNotesByCreator(username: String): List<Note> {
@@ -55,7 +54,7 @@ fun getNotesByCreator(username: String): List<Note> {
     headers.set("testUsername", username)
     val request: HttpEntity<String> = HttpEntity(headers)
     val response: ResponseEntity<String> =
-        restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.GET, request, String::class.java)
+        restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.GET, request, String::class.java)
 
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
@@ -67,7 +66,7 @@ fun deleteNote(username: String, id: String): ResponseEntity<String> {
     val request: HttpEntity<String> = HttpEntity(headers)
 
     return restTemplate.exchange(
-        "$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT/$id",
+        "$BASE_URL$NOTES_ENDPOINT/$id",
         HttpMethod.DELETE,
         request,
         String::class.java

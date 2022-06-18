@@ -1,6 +1,10 @@
 package com.projectfawkes
 
-import com.projectfawkes.utils.*
+import com.projectfawkes.api.controller.NOTES_ENDPOINT
+import com.projectfawkes.utils.createNote
+import com.projectfawkes.utils.createUser
+import com.projectfawkes.utils.deleteNote
+import com.projectfawkes.utils.deleteUser
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.*
@@ -57,7 +61,7 @@ class NoteEndpointsFailureTest {
         val request = HttpEntity(body, headers)
 
         try {
-            restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+            restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.PUT, request, String::class.java)
             fail()
         } catch (e: HttpClientErrorException) {
             if (e.statusCode != HttpStatus.BAD_REQUEST) {
@@ -74,7 +78,7 @@ class NoteEndpointsFailureTest {
         val request = HttpEntity(body, headers)
 
         try {
-            restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+            restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.PUT, request, String::class.java)
             fail()
         } catch (e: HttpClientErrorException) {
             if (e.statusCode != HttpStatus.UNAUTHORIZED) {
@@ -99,7 +103,7 @@ class NoteEndpointsFailureTest {
         val request = HttpEntity(body, headers)
 
         try {
-            restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.POST, request, String::class.java)
+            restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.POST, request, String::class.java)
             fail()
         } catch (e: HttpClientErrorException) {
             if (e.statusCode != HttpStatus.UNAUTHORIZED) {
@@ -117,7 +121,7 @@ class NoteEndpointsFailureTest {
 
         val request = HttpEntity(body, headers)
         try {
-            restTemplate.exchange("$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT", HttpMethod.POST, request, String::class.java)
+            restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.POST, request, String::class.java)
             fail()
         } catch (e: HttpClientErrorException) {
             if (e.statusCode != HttpStatus.BAD_REQUEST) {
@@ -135,7 +139,7 @@ class NoteEndpointsFailureTest {
 
         try {
             restTemplate.exchange(
-                "$BASE_URL$USER_ENDPOINT$NOTE_ENDPOINT",
+                "$BASE_URL$NOTES_ENDPOINT",
                 HttpMethod.DELETE,
                 request,
                 String::class.java

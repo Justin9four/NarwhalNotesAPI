@@ -2,6 +2,7 @@ package com.projectfawkes
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.projectfawkes.api.controller.API_ENDPOINT
 import com.projectfawkes.responseObjects.ServiceAccount
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -13,14 +14,14 @@ import java.nio.charset.Charset
 import java.util.*
 import kotlin.system.exitProcess
 
-var BASE_URL = "http://localhost:8080/api"
+var BASE_URL = "http://localhost:8080"
 val restTemplate = RestTemplate()
 private val logger: Logger = LogManager.getLogger()
 
 fun testConnection() {
     val headers = HttpEntity<String>(HttpHeaders())
     try {
-        restTemplate.exchange(BASE_URL, HttpMethod.GET, headers, String::class.java)
+        restTemplate.exchange("$BASE_URL$API_ENDPOINT", HttpMethod.GET, headers, String::class.java)
     } catch (e: Exception) {
         logger.info("HTTP request fail. Restart local instance")
         exitProcess(1)

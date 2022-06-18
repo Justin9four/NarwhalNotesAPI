@@ -4,16 +4,16 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectfawkes.BASE_URL
 import com.projectfawkes.addBasicAuthToRequest
+import com.projectfawkes.api.controller.API_ENDPOINT
+import com.projectfawkes.api.controller.AUTHENTICATE_ENDPOINT
+import com.projectfawkes.api.controller.REGISTER_ENDPOINT
+import com.projectfawkes.api.controller.USERS_ENDPOINT
 import com.projectfawkes.responseObjects.Account
 import com.projectfawkes.responseObjects.UpdateUser
 import com.projectfawkes.responseObjects.User
 import com.projectfawkes.restTemplate
 import org.springframework.http.*
 import org.springframework.web.util.UriComponentsBuilder
-
-const val REGISTER_ENDPOINT = "/register"
-const val USER_ENDPOINT = "/user"
-const val AUTHENTICATE_ENDPOINT = "/authenticate"
 
 fun createUser(
     username: String, password: String,
@@ -29,14 +29,14 @@ fun createUser(
     val request = HttpEntity(body, headers)
 
     val response: ResponseEntity<String> =
-        restTemplate.exchange("$BASE_URL$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+        restTemplate.exchange("$BASE_URL$API_ENDPOINT$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
 
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
 
 fun authenticate(username: String, password: String): Account {
     val builder: UriComponentsBuilder = UriComponentsBuilder
-        .fromHttpUrl("$BASE_URL$AUTHENTICATE_ENDPOINT")
+        .fromHttpUrl("$BASE_URL$API_ENDPOINT$AUTHENTICATE_ENDPOINT")
     val headers = HttpHeaders()
     addBasicAuthToRequest(headers)
     val body = mapOf("username" to username, "password" to password)
@@ -49,7 +49,7 @@ fun authenticate(username: String, password: String): Account {
 
 fun getUser(username: String): User {
     val builder: UriComponentsBuilder = UriComponentsBuilder
-        .fromHttpUrl("$BASE_URL$USER_ENDPOINT")
+        .fromHttpUrl("$BASE_URL$USERS_ENDPOINT")
     val headers = HttpHeaders()
     headers.set("testUsername", username)
     headers.contentType = MediaType.APPLICATION_JSON
@@ -73,7 +73,7 @@ fun updateUser(username: String, updateUserObject: UpdateUser): ResponseEntity<S
     if (!updateUserObject.photoUrl.isNullOrBlank()) body["photoUrl"] = updateUserObject.photoUrl!!
 
     val request = HttpEntity(body, headers)
-    return restTemplate.exchange("$BASE_URL$USER_ENDPOINT", HttpMethod.POST, request, String::class.java)
+    return restTemplate.exchange("$BASE_URL$USERS_ENDPOINT", HttpMethod.POST, request, String::class.java)
 }
 
 fun deleteUser(username: String): ResponseEntity<String> {
@@ -82,5 +82,5 @@ fun deleteUser(username: String): ResponseEntity<String> {
     headers.contentType = MediaType.APPLICATION_JSON
     val request = HttpEntity<String>(headers)
 
-    return restTemplate.exchange("$BASE_URL$USER_ENDPOINT", HttpMethod.DELETE, request, String::class.java)
+    return restTemplate.exchange("$BASE_URL$USERS_ENDPOINT", HttpMethod.DELETE, request, String::class.java)
 }

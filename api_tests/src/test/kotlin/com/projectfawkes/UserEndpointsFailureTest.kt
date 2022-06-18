@@ -2,7 +2,12 @@ package com.projectfawkes
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.projectfawkes.utils.*
+import com.projectfawkes.api.controller.API_ENDPOINT
+import com.projectfawkes.api.controller.AUTHENTICATE_ENDPOINT
+import com.projectfawkes.api.controller.REGISTER_ENDPOINT
+import com.projectfawkes.api.controller.USERS_ENDPOINT
+import com.projectfawkes.utils.createUser
+import com.projectfawkes.utils.deleteUser
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.*
@@ -60,7 +65,12 @@ class UserEndpointsFailureTest {
         val request = HttpEntity(body, headers)
 
         try {
-            restTemplate.exchange("$BASE_URL$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+            restTemplate.exchange(
+                "$BASE_URL$API_ENDPOINT$REGISTER_ENDPOINT",
+                HttpMethod.PUT,
+                request,
+                String::class.java
+            )
             fail()
         } catch (e: HttpClientErrorException) {
             if (e.statusCode != HttpStatus.BAD_REQUEST) {
@@ -79,7 +89,12 @@ class UserEndpointsFailureTest {
         val request = HttpEntity(mutableMapOf<String, String>(), headers)
 
         try {
-            restTemplate.exchange("$BASE_URL$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+            restTemplate.exchange(
+                "$BASE_URL$API_ENDPOINT$REGISTER_ENDPOINT",
+                HttpMethod.PUT,
+                request,
+                String::class.java
+            )
             fail()
         } catch (e: HttpClientErrorException) {
             if (e.statusCode != HttpStatus.UNAUTHORIZED) {
@@ -123,8 +138,8 @@ class UserEndpointsFailureTest {
     @DataProvider(name = "unauthorizedTest")
     fun unauthorizedTest(): MutableIterator<Array<Any>> {
         return arrayListOf<Array<Any>>(
-                arrayOf("$BASE_URL$AUTHENTICATE_ENDPOINT", HttpMethod.POST),
-                arrayOf("$BASE_URL$USER_ENDPOINT", HttpMethod.DELETE)
+            arrayOf("$BASE_URL$API_ENDPOINT$AUTHENTICATE_ENDPOINT", HttpMethod.POST),
+            arrayOf("$BASE_URL$USERS_ENDPOINT", HttpMethod.DELETE)
         ).iterator()
     }
 
