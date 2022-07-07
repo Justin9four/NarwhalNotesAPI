@@ -67,7 +67,7 @@ class UserEndpointsFailureTest {
         try {
             restTemplate.exchange(
                 "$BASE_URL$API_ENDPOINT$REGISTER_ENDPOINT",
-                HttpMethod.PUT,
+                HttpMethod.POST,
                 request,
                 String::class.java
             )
@@ -91,7 +91,7 @@ class UserEndpointsFailureTest {
         try {
             restTemplate.exchange(
                 "$BASE_URL$API_ENDPOINT$REGISTER_ENDPOINT",
-                HttpMethod.PUT,
+                HttpMethod.POST,
                 request,
                 String::class.java
             )

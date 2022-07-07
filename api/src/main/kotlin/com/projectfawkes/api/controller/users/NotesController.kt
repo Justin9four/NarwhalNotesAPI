@@ -33,7 +33,7 @@ class NotesController {
     @PostMapping(NOTES_SYNC_PUSHER_ENDPOINT)
     fun usePusher() = ResponseEntity<Void>(HttpStatus.OK)
 
-    @PutMapping
+    @PostMapping
     fun createNote(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Note> {
         val values = Validator(listOf(Field.TEXT)).validate(body, listOf(Field.TITLE, Field.TEXT))
         val uid = request.getAttribute("uid").toString()
@@ -46,7 +46,7 @@ class NotesController {
         )
     }
 
-    @PostMapping
+    @PutMapping
     fun updateNote(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Any> {
         val values =
             Validator(listOf(Field.TITLE, Field.TEXT)).validate(body, listOf(Field.TITLE, Field.TEXT, Field.ID))

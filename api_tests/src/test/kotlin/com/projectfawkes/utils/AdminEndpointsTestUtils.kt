@@ -33,7 +33,7 @@ fun promoteDemoteAccount(username: String, accountUID: String, promoted: Boolean
     val request = HttpEntity(body, headers)
     return restTemplate.exchange(
         "$BASE_URL$ADMIN_ENDPOINT$ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT",
-        HttpMethod.POST,
+        HttpMethod.PUT,
         request,
         String::class.java
     )
@@ -48,7 +48,7 @@ fun enableDisableAccount(username: String, accountUID: String, enabled: Boolean)
     val request = HttpEntity(body, headers)
     return restTemplate.exchange(
         "$BASE_URL$ADMIN_ENDPOINT$ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT",
-        HttpMethod.POST,
+        HttpMethod.PUT,
         request,
         String::class.java
     )

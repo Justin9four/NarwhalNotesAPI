@@ -18,7 +18,10 @@ import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.util.WebUtils
 import java.sql.Timestamp
 import java.util.*
@@ -33,7 +36,7 @@ import javax.servlet.http.HttpServletResponse
 class AuthenticationController {
     private val logger: Logger = LogManager.getLogger()
 
-    @PutMapping(REGISTER_ENDPOINT)
+    @PostMapping(REGISTER_ENDPOINT)
     fun register(@RequestBody body: Map<String, String>): ResponseEntity<Account> {
         logger.info("Inside /api/register")
         val values = Validator().validate(

@@ -38,13 +38,13 @@ class AdminController {
         return ResponseEntity(users, HttpStatus.OK)
     }
 
-    @PutMapping
+    @PostMapping
     fun importUsers(request: HttpServletRequest): ResponseEntity<Any> {
         // batch import. Can create other Admin accounts. Cannot create service account
         return ResponseEntity("TODO finish import users Admin endpoint", HttpStatus.OK)
     }
 
-    @PostMapping(ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT)
+    @PutMapping(ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT)
     fun promoteDemoteAccount(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
         // the way a normal user becomes an ADMIN
         logger.info("Inside POST /api/users/promoteDemoteAccount")
@@ -57,7 +57,7 @@ class AdminController {
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @PostMapping(ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT)
+    @PutMapping(ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT)
     fun enableDisableAccounts(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
         // can enable/disable Admin or User accounts
         logger.info("Inside POST /api/users/enable-disable")

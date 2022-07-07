@@ -32,7 +32,7 @@ class UserAccountsController {
         return ResponseEntity(getUser(uid), HttpStatus.OK)
     }
 
-    @PostMapping
+    @PutMapping
     fun updateUser(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Any> {
         logger.info("Inside POST /api/user")
         val uid = request.getAttribute("uid").toString()

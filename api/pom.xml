@@ -8,7 +8,7 @@
 		<version>0.0.1</version>
 	</parent>
 	<artifactId>api</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>api</name>
 	<description>Project Fawkes API</description>
 

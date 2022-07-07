@@ -29,7 +29,7 @@ fun createUser(
     val request = HttpEntity(body, headers)
 
     val response: ResponseEntity<String> =
-        restTemplate.exchange("$BASE_URL$API_ENDPOINT$REGISTER_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+        restTemplate.exchange("$BASE_URL$API_ENDPOINT$REGISTER_ENDPOINT", HttpMethod.POST, request, String::class.java)
 
     return jacksonObjectMapper().readValue(response.body ?: "")
 }
@@ -73,7 +73,7 @@ fun updateUser(username: String, updateUserObject: UpdateUser): ResponseEntity<S
     if (!updateUserObject.photoUrl.isNullOrBlank()) body["photoUrl"] = updateUserObject.photoUrl!!
 
     val request = HttpEntity(body, headers)
-    return restTemplate.exchange("$BASE_URL$USERS_ENDPOINT", HttpMethod.POST, request, String::class.java)
+    return restTemplate.exchange("$BASE_URL$USERS_ENDPOINT", HttpMethod.PUT, request, String::class.java)
 }
 
 fun deleteUser(username: String): ResponseEntity<String> {

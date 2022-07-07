@@ -19,7 +19,7 @@ fun createNote(username: String, title: String, text: String? = null): String {
     val request = HttpEntity(body, headers)
 
     val response: ResponseEntity<String> =
-        restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.PUT, request, String::class.java)
+        restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.POST, request, String::class.java)
     val note: Note = jacksonObjectMapper().readValue(response.body ?: "")
 
     return note.id
@@ -46,7 +46,7 @@ fun updateNote(username: String, updateNoteObject: UpdateNote): ResponseEntity<S
     if (!updateNoteObject.text.isNullOrBlank()) body["text"] = updateNoteObject.text!!
 
     val request = HttpEntity(body, headers)
-    return restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.POST, request, String::class.java)
+    return restTemplate.exchange("$BASE_URL$NOTES_ENDPOINT", HttpMethod.PUT, request, String::class.java)
 }
 
 fun getNotesByCreator(username: String): List<Note> {
