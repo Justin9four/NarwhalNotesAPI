@@ -1,6 +1,6 @@
 package com.projectfawkes.api.dataClass
 
-import com.projectfawkes.api.auth.Roles
+import com.projectfawkes.api.auth.UserRoles
 
 data class Account(var uid: String?, val username: String?, val email: String?, val photoUrl: String?, val roles: List<String>?) {
     fun getAccountMap(password: String?): Map<String, Any> {
@@ -10,8 +10,8 @@ data class Account(var uid: String?, val username: String?, val email: String?, 
         if (!photoUrl.isNullOrBlank()) accountMap["photoUrl"] = photoUrl
         if (!password.isNullOrBlank()) accountMap["password"] = password
         if (!roles.isNullOrEmpty()) {
-            accountMap["isAdmin"] = roles.contains(Roles.ADMIN.value)
-            if (roles.contains(Roles.USER.value)) accountMap["isUser"] = true
+            accountMap["isAdmin"] = roles.contains(UserRoles.ADMIN.value)
+            if (roles.contains(UserRoles.USER.value)) accountMap["isUser"] = true
         }
         return accountMap
     }

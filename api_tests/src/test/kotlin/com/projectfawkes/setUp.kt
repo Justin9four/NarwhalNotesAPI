@@ -1,8 +1,8 @@
 package com.projectfawkes
 
+import API_ENDPOINT
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.projectfawkes.api.controller.API_ENDPOINT
 import com.projectfawkes.responseObjects.ServiceAccount
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger

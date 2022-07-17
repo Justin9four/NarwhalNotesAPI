@@ -49,7 +49,6 @@ open class RepoBaseClass(private val collection: String) {
         verifyUniqueValues(createData)
         val future: ApiFuture<WriteResult> = getFirebaseDB()!!.collection(collection).document(id).set(createData)
         future.get().updateTime // wait for create confirmation
-        logger.info("Successfully created from $collection: $id")
         return get("id", id)
     }
 
@@ -70,7 +69,6 @@ open class RepoBaseClass(private val collection: String) {
                 returnValues.add(getReturnObject(future))
             }
             field != null -> {
-                logger.info("getting data with field: $field and value: $value and collection: $collection")
                 val future = getFirebaseDB()!!.collection(collection).whereEqualTo(field, value).get()
                 val documents = future.get().documents
                 if (documents.isEmpty()) throw DataNotFoundException("Cannot get $field")
@@ -79,7 +77,6 @@ open class RepoBaseClass(private val collection: String) {
                 }
             }
             else -> {
-                logger.info("getting all documents in collection: $collection")
                 val future = getFirebaseDB()!!.collection(collection).get()
                 val documents = future.get().documents
                 if (documents.isEmpty()) throw DataNotFoundException("No Documents Found")
@@ -92,22 +89,18 @@ open class RepoBaseClass(private val collection: String) {
             throw DataNotFoundException("Cannot get object")
         }
 
-        logger.info("Successfully retrieved from $collection: $returnValues")
         return returnValues
     }
 
     fun update(id: String, updateData: Map<String, Any>) {
         if (updateData.isEmpty()) return
-        logger.info("Update Data $updateData")
         verifyUniqueValues(updateData)
         val future: ApiFuture<WriteResult> = getFirebaseDB()!!.collection(collection).document(id).update(updateData)
         future.get().updateTime // wait for update confirmation
-        logger.info("Successfully updated from $collection: $id")
     }
 
     fun delete(id: String) {
         val future: ApiFuture<WriteResult> = getFirebaseDB()!!.collection(collection).document(id).delete()
         future.get().updateTime
-        logger.info("Successfully deleted from $collection: $id")
     }
 }

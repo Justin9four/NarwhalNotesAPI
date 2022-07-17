@@ -52,8 +52,8 @@ class AdminEndpointsFailureTest {
             getUsers(user1.username!!, account1Uid)
             fail()
         } catch (e: HttpClientErrorException) {
-            if (e.statusCode != HttpStatus.UNAUTHORIZED) {
-                fail("Expected Unauthorized exception")
+            if (e.statusCode != HttpStatus.FORBIDDEN) {
+                fail("Expected Forbidden exception")
             }
         }
     }
@@ -64,8 +64,8 @@ class AdminEndpointsFailureTest {
             promoteDemoteAccount(user1.username!!, account1Uid, true)
             fail()
         } catch (e: HttpClientErrorException) {
-            if (e.statusCode != HttpStatus.UNAUTHORIZED) {
-                fail("Expected Unauthorized exception")
+            if (e.statusCode != HttpStatus.FORBIDDEN) {
+                fail("Expected Forbidden exception")
             }
         }
     }
@@ -76,8 +76,8 @@ class AdminEndpointsFailureTest {
             enableDisableAccount(user1.username!!, account1Uid, false)
             fail()
         } catch (e: HttpClientErrorException) {
-            if (e.statusCode != HttpStatus.UNAUTHORIZED) {
-                fail("Expected Unauthorized exception")
+            if (e.statusCode != HttpStatus.FORBIDDEN) {
+                fail("Expected Forbidden exception")
             }
         }
     }

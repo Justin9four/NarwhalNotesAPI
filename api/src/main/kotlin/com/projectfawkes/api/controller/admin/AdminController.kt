@@ -1,8 +1,8 @@
 package com.projectfawkes.api.controller.admin
 
 import com.projectfawkes.api.auth.AuthType
-import com.projectfawkes.api.auth.Roles
 import com.projectfawkes.api.auth.UseAuth
+import com.projectfawkes.api.auth.UserRoles
 import com.projectfawkes.api.controller.ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT
 import com.projectfawkes.api.controller.ADMIN_ENDPOINT
 import com.projectfawkes.api.controller.ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT
@@ -29,10 +29,8 @@ class AdminController {
 
     @GetMapping
     fun getUsers(request: HttpServletRequest): ResponseEntity<List<UserComplete>> {
-        logger.info("Inside GET /api/users/users")
         // get information about requested users
         // if no uid provided all users retrieved
-        logger.info("Querying user with id: ${request.getParameter("uid")}")
         // add in additional query params
         val users = getUsers(request.getParameter("uid"))
         return ResponseEntity(users, HttpStatus.OK)
@@ -47,10 +45,9 @@ class AdminController {
     @PutMapping(ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT)
     fun promoteDemoteAccount(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
         // the way a normal user becomes an ADMIN
-        logger.info("Inside POST /api/users/promoteDemoteAccount")
         val values = Validator().validate(body, listOf(Field.UID, Field.PROMOTED))
-        val rolesList = mutableListOf(Roles.USER.value)
-        if (values[Field.PROMOTED]!!.toBoolean()) rolesList.add(Roles.ADMIN.value)
+        val rolesList = mutableListOf(UserRoles.USER.value)
+        if (values[Field.PROMOTED]!!.toBoolean()) rolesList.add(UserRoles.ADMIN.value)
         val account = Account(values[Field.UID], null, null, null, rolesList)
         val profile = Profile(values[Field.UID], null, null, null, null)
         updateUser(account, profile, null)
@@ -60,7 +57,6 @@ class AdminController {
     @PutMapping(ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT)
     fun enableDisableAccounts(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
         // can enable/disable Admin or User accounts
-        logger.info("Inside POST /api/users/enable-disable")
         val values = Validator().validate(body, listOf(Field.ENABLED, Field.UID))
         val enabled: Boolean = values[Field.ENABLED]!!.toBoolean()
         enableDisableAccount(values[Field.UID]!!, enabled)

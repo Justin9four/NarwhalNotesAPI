@@ -4,8 +4,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.SessionCookieOptions
 import com.projectfawkes.api.auth.AuthType
-import com.projectfawkes.api.auth.Roles
 import com.projectfawkes.api.auth.UseAuth
+import com.projectfawkes.api.auth.UserRoles
 import com.projectfawkes.api.dataClass.Account
 import com.projectfawkes.api.dataClass.Profile
 import com.projectfawkes.api.errorHandler.Field
@@ -38,7 +38,6 @@ class AuthenticationController {
 
     @PostMapping(REGISTER_ENDPOINT)
     fun register(@RequestBody body: Map<String, String>): ResponseEntity<Account> {
-        logger.info("Inside /api/register")
         val values = Validator().validate(
             body,
             listOf(Field.EMAIL, Field.PASSWORD, Field.LAST_NAME, Field.FIRST_NAME, Field.USERNAME, Field.DOB)
@@ -49,7 +48,7 @@ class AuthenticationController {
             values.getValue(Field.USERNAME),
             values.getValue(Field.EMAIL),
             null,
-            listOf(Roles.USER.value)
+            listOf(UserRoles.USER.value)
         )
         val profile = Profile(
             null,
@@ -67,7 +66,6 @@ class AuthenticationController {
 
     @PostMapping(AUTHENTICATE_ENDPOINT)
     fun authenticate(@RequestBody body: Map<String, String>): ResponseEntity<Account> {
-        logger.info("Inside /api/authenticate")
         val usernameAndPassword = Validator().validate(body, listOf(Field.USERNAME, Field.PASSWORD))
         val accountAndToken = authenticateCredentials(
             usernameAndPassword.getValue(Field.USERNAME),

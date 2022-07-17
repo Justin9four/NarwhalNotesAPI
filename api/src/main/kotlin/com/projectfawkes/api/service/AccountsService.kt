@@ -110,7 +110,6 @@ fun updateUser(account: Account, profile: Profile, password: String?) {
     }
     updateAccount(account, passwordHash)
     profileRepo.update(account.uid!!, profile.getProfileMap())
-    logger.info("Successfully updated user: " + account.uid)
 }
 
 fun deleteUser(id: String) {
@@ -135,7 +134,6 @@ private fun createAccount(account: Account, passwordHash: String): String {
         logger.error("Error creating user: " + e.message)
         throw DataConflictException("User ${account.uid} conflicts with Firebase users", e)
     }
-    logger.info("Successfully created user: " + userRecord.uid)
     return FirebaseAuth.getInstance().createCustomToken(userRecord.uid)!!
 }
 

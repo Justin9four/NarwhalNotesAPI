@@ -1,13 +1,13 @@
 package com.projectfawkes.utils
 
+import API_ENDPOINT
+import AUTHENTICATE_ENDPOINT
+import REGISTER_ENDPOINT
+import USERS_ENDPOINT
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectfawkes.BASE_URL
 import com.projectfawkes.addBasicAuthToRequest
-import com.projectfawkes.api.controller.API_ENDPOINT
-import com.projectfawkes.api.controller.AUTHENTICATE_ENDPOINT
-import com.projectfawkes.api.controller.REGISTER_ENDPOINT
-import com.projectfawkes.api.controller.USERS_ENDPOINT
 import com.projectfawkes.responseObjects.Account
 import com.projectfawkes.responseObjects.UpdateUser
 import com.projectfawkes.responseObjects.User

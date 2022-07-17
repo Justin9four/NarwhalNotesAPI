@@ -3,7 +3,7 @@ package com.projectfawkes.api.repository
 import com.google.api.core.ApiFuture
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.QueryDocumentSnapshot
-import com.projectfawkes.api.auth.Roles
+import com.projectfawkes.api.auth.UserRoles
 import com.projectfawkes.api.dataClass.Account
 
 open class AccountRepo : RepoBaseClass("accounts") {
@@ -24,10 +24,10 @@ open class AccountRepo : RepoBaseClass("accounts") {
     protected fun getRoles(future: ApiFuture<DocumentSnapshot>): List<String> {
         val roles: MutableList<String> = mutableListOf()
         if (future.get().get("isUser") == true) {
-            roles.add(Roles.USER.value)
+            roles.add(UserRoles.USER.value)
         }
         if (future.get().get("isAdmin") == true) {
-            roles.add(Roles.ADMIN.value)
+            roles.add(UserRoles.ADMIN.value)
         }
         return roles
     }
@@ -35,10 +35,10 @@ open class AccountRepo : RepoBaseClass("accounts") {
     protected fun getRoles(document: QueryDocumentSnapshot): List<String> {
         val roles: MutableList<String> = mutableListOf()
         if (document.get("isUser") == true) {
-            roles.add(Roles.USER.value)
+            roles.add(UserRoles.USER.value)
         }
         if (document.get("isAdmin") == true) {
-            roles.add(Roles.ADMIN.value)
+            roles.add(UserRoles.ADMIN.value)
         }
         return roles
     }

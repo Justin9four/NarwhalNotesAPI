@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 
@@ -27,19 +28,16 @@ class UserAccountsController {
 
     @GetMapping
     fun getUser(request: HttpServletRequest): ResponseEntity<User> {
-        logger.info("Inside GET /api/user")
-        val uid = request.getAttribute("uid").toString()
+        val uid = SecurityContextHolder.getContext().authentication.principal.toString()
         return ResponseEntity(getUser(uid), HttpStatus.OK)
     }
 
     @PutMapping
     fun updateUser(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Any> {
-        logger.info("Inside POST /api/user")
-        val uid = request.getAttribute("uid").toString()
+        val uid = SecurityContextHolder.getContext().authentication.principal.toString()
         val fields =
             listOf(Field.FIRST_NAME, Field.LAST_NAME, Field.USERNAME, Field.DOB, Field.PASSWORD, Field.PHOTO_URL)
         val values = Validator(fields).validate(body, fields)
-        logger.info("update values: $values")
 
         val account = Account(uid, values[Field.USERNAME], null, values[Field.PHOTO_URL], null)
         val profile = Profile(
@@ -52,8 +50,7 @@ class UserAccountsController {
 
     @DeleteMapping
     fun deleteUser(requestBody: HttpServletRequest): ResponseEntity<Any> {
-        logger.info("Inside DELETE /api/user")
-        val uid = requestBody.getAttribute("uid").toString()
+        val uid = SecurityContextHolder.getContext().authentication.principal.toString()
         deleteUser(uid)
         return ResponseEntity(HttpStatus.OK)
     }

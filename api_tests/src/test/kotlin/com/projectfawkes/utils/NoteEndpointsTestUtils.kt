@@ -1,9 +1,9 @@
 package com.projectfawkes.utils
 
+import NOTES_ENDPOINT
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectfawkes.BASE_URL
-import com.projectfawkes.api.controller.NOTES_ENDPOINT
 import com.projectfawkes.responseObjects.Note
 import com.projectfawkes.responseObjects.UpdateNote
 import com.projectfawkes.restTemplate

@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 
@@ -36,7 +37,7 @@ class NotesController {
     @PostMapping
     fun createNote(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Note> {
         val values = Validator(listOf(Field.TEXT)).validate(body, listOf(Field.TITLE, Field.TEXT))
-        val uid = request.getAttribute("uid").toString()
+        val uid = SecurityContextHolder.getContext().authentication.principal.toString()
 
         return ResponseEntity(
             createNote(
@@ -50,8 +51,7 @@ class NotesController {
     fun updateNote(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Any> {
         val values =
             Validator(listOf(Field.TITLE, Field.TEXT)).validate(body, listOf(Field.TITLE, Field.TEXT, Field.ID))
-        val uid = request.getAttribute("uid").toString()
-        logger.info("Updating note by $uid with id ${values.getValue(Field.ID)}")
+        val uid = SecurityContextHolder.getContext().authentication.principal.toString()
 
         val noteToUpdate = getNotes("id", values.getValue(Field.ID))[0]
         if (noteToUpdate.creator != uid) throw UnauthorizedException("Unauthorized to update other user's note")
@@ -63,7 +63,7 @@ class NotesController {
 
     @GetMapping(NOTES_BY_ID_ENDPOINT)
     fun getNoteById(request: HttpServletRequest, @PathVariable id: String): ResponseEntity<Note> {
-        val creator = request.getAttribute("uid").toString()
+        val creator = SecurityContextHolder.getContext().authentication.principal.toString()
         val notes = getNotes("id", id)
         when {
             notes.size > 1 -> throw DataConflictException(noteIDNotUnique)
@@ -75,14 +75,14 @@ class NotesController {
 
     @GetMapping()
     fun getNotes(request: HttpServletRequest): ResponseEntity<List<Note>> {
-        val creator = request.getAttribute("uid").toString()
+        val creator = SecurityContextHolder.getContext().authentication.principal.toString()
         val notes = getNotes("creator", creator)
         return ResponseEntity(notes, HttpStatus.OK)
     }
 
     @DeleteMapping(NOTES_BY_ID_ENDPOINT)
     fun deleteNote(request: HttpServletRequest, @PathVariable id: String): ResponseEntity<Any> {
-        val uid = request.getAttribute("uid").toString()
+        val uid = SecurityContextHolder.getContext().authentication.principal.toString()
         val notes = getNotes("id", id)
         if (notes[0].creator != uid) throw UnauthorizedException("Cannot delete someone else's note")
         deleteNote(id)

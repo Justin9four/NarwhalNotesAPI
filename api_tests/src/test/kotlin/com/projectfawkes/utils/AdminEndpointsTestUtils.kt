@@ -1,11 +1,11 @@
 package com.projectfawkes.utils
 
+import ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT
+import ADMIN_ENDPOINT
+import ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectfawkes.BASE_URL
-import com.projectfawkes.api.controller.ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT
-import com.projectfawkes.api.controller.ADMIN_ENDPOINT
-import com.projectfawkes.api.controller.ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT
 import com.projectfawkes.responseObjects.CompleteUser
 import com.projectfawkes.restTemplate
 import org.springframework.http.*

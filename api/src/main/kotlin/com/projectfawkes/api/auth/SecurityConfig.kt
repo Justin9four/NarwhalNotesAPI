@@ -1,70 +1,94 @@
 package com.projectfawkes.api.auth
 
-import org.springframework.context.annotation.Bean
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
-import org.springframework.session.ReactiveMapSessionRepository
-import org.springframework.session.ReactiveSessionRepository
-import org.springframework.session.config.annotation.web.server.EnableSpringWebSession
-import org.springframework.session.data.redis.config.annotation.web.server.EnableRedisWebSession
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.util.concurrent.ConcurrentHashMap
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
-@Configuration
-@EnableSpringWebSession
-class SessionConfig {
-    @Bean
-    fun reactiveSessionRepository(): ReactiveSessionRepository<*> {
-        return ReactiveMapSessionRepository(ConcurrentHashMap())
-    }
-}
 
-@Configuration
-@EnableRedisWebSession
-class RedisConfig {
-    @Bean
-    fun redisConnectionFactory(): LettuceConnectionFactory {
-        return LettuceConnectionFactory()
-    }
-}
-
-@Configuration
-class RequestHandler : WebMvcConfigurer {
-    override fun addInterceptors(registry: InterceptorRegistry) {
-        super.addInterceptors(registry)
-        registry.addInterceptor(MyInterceptor())
-    }
-}
-
-@Configuration
 @EnableWebSecurity
-class SecurityConfig : WebSecurityConfigurerAdapter() {
+@EnableGlobalMethodSecurity(securedEnabled = true)
+class SecurityConfig {
+    @Configuration
+    @Order(1)
+    class UserSecurityConfig : WebSecurityConfigurerAdapter() {
+        @Autowired
+        val authenticationProvider: AuthenticationProviderUser? = null
 
-    // hasRole() must have the role name without the "ROLE" word (Spring rule)
-    @Throws(Exception::class)
-    override fun configure(http: HttpSecurity) {
-        http
-            .csrf().disable()
-            .exceptionHandling()
-            .authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)).and()
-            .authorizeRequests()
-            .antMatchers("/error").permitAll()
-                .antMatchers("/api/user**", "/api/user/**").permitAll()
-                .antMatchers("/api/admin**", "/api/admin/**").permitAll()
-                .antMatchers("/api**", "/api/**").permitAll()
+        @Autowired
+        val authenticationEntryPoint: AuthenticationExceptionEntryPoint? = null
+
+        override fun configure(auth: AuthenticationManagerBuilder) {
+            auth.authenticationProvider(authenticationProvider)
+        }
+
+        @Throws(Exception::class)
+        override fun configure(http: HttpSecurity) {
+            http
+                .csrf().disable()
+                .requestMatchers()
+                .antMatchers("/api/admin**", "/api/admin/**", "/api/users**", "/api/users/**")
                 .and()
-                .logout()
-                .logoutRequestMatcher(AntPathRequestMatcher("/api/logout"))
-                .deleteCookies("JSESSIONID")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .logoutSuccessUrl("/logout.done")
+                .exceptionHandling()
+                .accessDeniedHandler(AccessDeniedExceptionHandler())
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .and()
+                .addFilterBefore(FilterSession(), UsernamePasswordAuthenticationFilter::class.java)
+                .authorizeRequests()
+                .antMatchers("/api/admin**", "/api/admin/**").hasRole("ADMIN")
+                .antMatchers("/api/users**", "/api/users/**").hasAnyRole("ADMIN", "USER")
+        }
+    }
+
+    @Configuration
+    @Order(2)
+    class ServiceAccountSecurityConfig : WebSecurityConfigurerAdapter() {
+        @Autowired
+        val authenticationProvider: AuthenticationProviderServiceAccount? = null
+
+        override fun configure(auth: AuthenticationManagerBuilder) {
+            auth.authenticationProvider(authenticationProvider)
+        }
+
+        @Throws(Exception::class)
+        override fun configure(http: HttpSecurity) {
+            http
+                .requestMatchers()
+                .antMatchers("/api/authenticate**", "/api/register**", "/api/checkToken**", "/api/signOut**")
+                .and()
+                .csrf().disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                .and()
+                .addFilterBefore(FilterServiceAccount(), UsernamePasswordAuthenticationFilter::class.java)
+                .authorizeRequests()
+                .antMatchers("/api/**").hasRole("SERVICE_ACCOUNT")
+        }
+    }
+
+    @Configuration
+    @Order(3)
+    class AnonymousSecurityConfig : WebSecurityConfigurerAdapter() {
+
+        @Throws(Exception::class)
+        override fun configure(http: HttpSecurity) {
+            http
+                .requestMatchers()
+                .antMatchers("/api**", "/api/**", "/error")
+                .and()
+                .csrf().disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                .and()
+                .authorizeRequests()
+                .antMatchers("/**").permitAll()
+        }
     }
 }

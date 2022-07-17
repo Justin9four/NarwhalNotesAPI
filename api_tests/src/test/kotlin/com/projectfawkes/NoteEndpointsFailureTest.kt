@@ -1,6 +1,6 @@
 package com.projectfawkes
 
-import com.projectfawkes.api.controller.NOTES_ENDPOINT
+import NOTES_ENDPOINT
 import com.projectfawkes.utils.createNote
 import com.projectfawkes.utils.createUser
 import com.projectfawkes.utils.deleteNote
