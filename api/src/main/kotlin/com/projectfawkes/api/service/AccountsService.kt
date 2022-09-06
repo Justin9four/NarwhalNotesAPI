@@ -3,12 +3,12 @@ package com.projectfawkes.api.service
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.UserRecord
+import com.projectfawkes.api.controller.dto.AccountAndTokenDto
+import com.projectfawkes.api.controller.dto.UserCompleteDto
+import com.projectfawkes.api.controller.dto.UserDto
 import com.projectfawkes.api.dataClass.Account
 import com.projectfawkes.api.dataClass.Authentication
 import com.projectfawkes.api.dataClass.Profile
-import com.projectfawkes.api.dto.AccountAndToken
-import com.projectfawkes.api.dto.User
-import com.projectfawkes.api.dto.UserComplete
 import com.projectfawkes.api.errorHandler.DataConflictException
 import com.projectfawkes.api.errorHandler.DataNotFoundException
 import com.projectfawkes.api.errorHandler.UnauthorizedException
@@ -24,66 +24,49 @@ private val logger: Logger = LogManager.getLogger()
 private val profileRepo: ProfileRepo = ProfileRepo()
 private val accountRepo: AccountRepo = AccountRepo()
 
-fun register(account: Account, profile: Profile, password: String): AccountAndToken {
+fun register(account: Account, profile: Profile, password: String): AccountAndTokenDto {
     val uid = UUID.randomUUID().toString()
     account.uid = uid
 
     val passwordHash = BCrypt.hashpw(password, BCrypt.gensalt(10))!!
     val customToken = createAccount(account, passwordHash)
     profileRepo.create(uid, profile.getProfileMap())
-    return AccountAndToken(account, customToken)
+    return AccountAndTokenDto(account, customToken)
 }
 
-fun getAccountAndToken(field: String, value: String): AccountAndToken {
-    val account = accountRepo.get(field, value) as Account
-    val customAuthToken = FirebaseAuth.getInstance().createCustomToken(account.uid)!!
-    return AccountAndToken(account, customAuthToken)
-}
-
-fun authenticateCredentials(username: String, password: String): AccountAndToken {
+fun authenticateCredentials(username: String, password: String): AccountAndTokenDto {
     return try {
         val authentication = AuthenticationRepo().get("username", username) as Authentication
         if (!BCrypt.checkpw(password, authentication.password)) {
             throw UnauthorizedException("Unauthenticated. Username or Password incorrect")
         }
         val customAuthToken = FirebaseAuth.getInstance().createCustomToken(authentication.account.uid)!!
-        AccountAndToken(authentication.account, customAuthToken)
+        AccountAndTokenDto(authentication.account, customAuthToken)
     } catch (e: DataNotFoundException) {
         throw UnauthorizedException("Unauthenticated. Username or Password incorrect")
     }
 }
 
-fun authenticateToken(token: String): AccountAndToken {
-    return try {
-        val decodedToken = FirebaseAuth.getInstance().verifyIdToken(token)
-        val uid = decodedToken.uid
-        val authentication = AuthenticationRepo().get("id", uid) as Authentication
-        AccountAndToken(authentication.account, token)
-    } catch (e: FirebaseAuthException) {
-        throw UnauthorizedException("Token unauthorized. Login failed")
-    }
-}
-
-fun getUser(uid: String): User {
+fun getUser(uid: String): UserDto {
     val account = accountRepo.get("id", uid) as Account
     val profile = profileRepo.get("id", uid) as Profile
-    return User(account, profile)
+    return UserDto(account, profile)
 }
 
 fun getAccount(uid: String): Account {
     return accountRepo.get("id", uid) as Account
 }
 
-fun getUsers(uid: String?): List<UserComplete> {
+fun getUsers(uid: String?): List<UserCompleteDto> {
     val field = if (!uid.isNullOrBlank()) "id" else null
     val accounts = accountRepo.getValues(field, uid).filterIsInstance<Account>()
     val profiles = profileRepo.getValues(field, uid).filterIsInstance<Profile>()
-    val users = mutableListOf<UserComplete>()
+    val users = mutableListOf<UserCompleteDto>()
     for (account in accounts) {
         val profile = profiles.find { it.uid == account.uid }
         val enabled = !FirebaseAuth.getInstance().getUser(account.uid).isDisabled
         if (profile != null) {
-            users.add(UserComplete(account, profile, enabled))
+            users.add(UserCompleteDto(account, profile, enabled))
         }
     }
     return users

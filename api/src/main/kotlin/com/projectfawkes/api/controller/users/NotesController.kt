@@ -6,26 +6,29 @@ import com.projectfawkes.api.controller.NOTES_BY_ID_ENDPOINT
 import com.projectfawkes.api.controller.NOTES_ENDPOINT
 import com.projectfawkes.api.controller.NOTES_SYNC_PUSHER_ENDPOINT
 import com.projectfawkes.api.controller.NOTES_UPLOAD_GOOGLE_DRIVE_ENDPOINT
+import com.projectfawkes.api.controller.dto.CreateNoteDto
+import com.projectfawkes.api.controller.dto.UpdateNoteDto
 import com.projectfawkes.api.dataClass.Note
-import com.projectfawkes.api.errorHandler.*
+import com.projectfawkes.api.errorHandler.DataConflictException
+import com.projectfawkes.api.errorHandler.DataNotFoundException
+import com.projectfawkes.api.errorHandler.UnauthorizedException
+import com.projectfawkes.api.errorHandler.ValidationException
 import com.projectfawkes.api.service.createNote
 import com.projectfawkes.api.service.deleteNote
 import com.projectfawkes.api.service.getNotes
 import com.projectfawkes.api.service.updateNote
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
+import javax.validation.Valid
 
 @RestController
 @RequestMapping(NOTES_ENDPOINT)
 @UseAuth(AuthType.USER)
 class NotesController {
-    private val logger: Logger = LogManager.getLogger()
-
     val noteIDNotUnique = "Note ID is not unique"
 
     @PutMapping(NOTES_UPLOAD_GOOGLE_DRIVE_ENDPOINT)
@@ -35,29 +38,36 @@ class NotesController {
     fun usePusher() = ResponseEntity<Void>(HttpStatus.OK)
 
     @PostMapping
-    fun createNote(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Note> {
-        val values = Validator(listOf(Field.TEXT)).validate(body, listOf(Field.TITLE, Field.TEXT))
+    fun createNote(
+        request: HttpServletRequest,
+        @Valid @RequestBody createNoteDto: CreateNoteDto,
+        errors: BindingResult
+    ): ResponseEntity<Note> {
+        if (errors.hasErrors()) throw ValidationException(errors)
         val uid = SecurityContextHolder.getContext().authentication.principal.toString()
 
         return ResponseEntity(
             createNote(
-                values.getValue(Field.TITLE), uid, values[Field.TEXT]
+                createNoteDto.title!!, uid, createNoteDto.text
                     ?: ""
             ), HttpStatus.OK
         )
     }
 
     @PutMapping
-    fun updateNote(request: HttpServletRequest, @RequestBody body: Map<String, String>): ResponseEntity<Any> {
-        val values =
-            Validator(listOf(Field.TITLE, Field.TEXT)).validate(body, listOf(Field.TITLE, Field.TEXT, Field.ID))
+    fun updateNote(
+        request: HttpServletRequest,
+        @Valid @RequestBody updateNoteDto: UpdateNoteDto,
+        errors: BindingResult
+    ): ResponseEntity<Any> {
+        if (errors.hasErrors()) throw ValidationException(errors)
         val uid = SecurityContextHolder.getContext().authentication.principal.toString()
 
-        val noteToUpdate = getNotes("id", values.getValue(Field.ID))[0]
+        val noteToUpdate = getNotes("id", updateNoteDto.id!!)[0]
         if (noteToUpdate.creator != uid) throw UnauthorizedException("Unauthorized to update other user's note")
 
-        val note = Note(null, values[Field.TITLE], null, null, values[Field.TEXT])
-        updateNote(values.getValue(Field.ID), note.convertToMap())
+        val note = Note(null, updateNoteDto.title, null, null, updateNoteDto.text)
+        updateNote(updateNoteDto.id, note.convertToMap())
         return ResponseEntity(HttpStatus.OK)
     }
 

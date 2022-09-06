@@ -6,18 +6,18 @@ import com.google.firebase.auth.SessionCookieOptions
 import com.projectfawkes.api.auth.AuthType
 import com.projectfawkes.api.auth.UseAuth
 import com.projectfawkes.api.auth.UserRoles
+import com.projectfawkes.api.controller.dto.AuthenticateDto
+import com.projectfawkes.api.controller.dto.RegisterDto
 import com.projectfawkes.api.dataClass.Account
 import com.projectfawkes.api.dataClass.Profile
-import com.projectfawkes.api.errorHandler.Field
 import com.projectfawkes.api.errorHandler.UnauthorizedException
-import com.projectfawkes.api.errorHandler.Validator
+import com.projectfawkes.api.errorHandler.ValidationException
 import com.projectfawkes.api.service.authenticateCredentials
 import com.projectfawkes.api.service.register
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,35 +29,30 @@ import java.util.concurrent.TimeUnit
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.validation.Valid
 
 @RestController
 @RequestMapping(API_ENDPOINT)
 @UseAuth(AuthType.SERVICEACCOUNT)
 class AuthenticationController {
-    private val logger: Logger = LogManager.getLogger()
-
     @PostMapping(REGISTER_ENDPOINT)
-    fun register(@RequestBody body: Map<String, String>): ResponseEntity<Account> {
-        val values = Validator().validate(
-            body,
-            listOf(Field.EMAIL, Field.PASSWORD, Field.LAST_NAME, Field.FIRST_NAME, Field.USERNAME, Field.DOB)
-        )
-
+    fun register(@Valid @RequestBody registerDto: RegisterDto, errors: BindingResult): ResponseEntity<Account> {
+        if (errors.hasErrors()) throw ValidationException(errors)
         val account = Account(
             null,
-            values.getValue(Field.USERNAME),
-            values.getValue(Field.EMAIL),
+            registerDto.username,
+            registerDto.email,
             null,
             listOf(UserRoles.USER.value)
         )
         val profile = Profile(
             null,
-            values.getValue(Field.FIRST_NAME),
-            values.getValue(Field.LAST_NAME),
+            registerDto.firstName,
+            registerDto.lastName,
             Timestamp(Date().time).toString(),
-            values.getValue(Field.DOB)
+            registerDto.dob
         )
-        val accountAndToken = register(account, profile, values.getValue(Field.PASSWORD))
+        val accountAndToken = register(account, profile, registerDto.password!!)
 
         val headers = HttpHeaders()
         headers.add("x-auth-token", accountAndToken.token)
@@ -65,11 +60,14 @@ class AuthenticationController {
     }
 
     @PostMapping(AUTHENTICATE_ENDPOINT)
-    fun authenticate(@RequestBody body: Map<String, String>): ResponseEntity<Account> {
-        val usernameAndPassword = Validator().validate(body, listOf(Field.USERNAME, Field.PASSWORD))
+    fun authenticate(
+        @Valid @RequestBody authenticateDto: AuthenticateDto,
+        errors: BindingResult
+    ): ResponseEntity<Account> {
+        if (errors.hasErrors()) throw ValidationException(errors)
         val accountAndToken = authenticateCredentials(
-            usernameAndPassword.getValue(Field.USERNAME),
-            usernameAndPassword.getValue(Field.PASSWORD)
+            authenticateDto.username!!,
+            authenticateDto.password!!
         )
 
         val headers = HttpHeaders()

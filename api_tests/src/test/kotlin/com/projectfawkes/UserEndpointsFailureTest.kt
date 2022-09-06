@@ -4,8 +4,6 @@ import API_ENDPOINT
 import AUTHENTICATE_ENDPOINT
 import REGISTER_ENDPOINT
 import USERS_ENDPOINT
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.projectfawkes.utils.createUser
 import com.projectfawkes.utils.deleteUser
 import org.apache.logging.log4j.LogManager
@@ -58,7 +56,7 @@ class UserEndpointsFailureTest {
     }
 
     @Test(dataProvider = "createUserMissingField")
-    fun createUserMissingField(body: Map<String, String>, validationError: ValidationError) {
+    fun createUserMissingField(body: Map<String, String>) {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
         addBasicAuthToRequest(headers)
@@ -76,9 +74,6 @@ class UserEndpointsFailureTest {
             if (e.statusCode != HttpStatus.BAD_REQUEST) {
                 fail()
             }
-
-            val validationErrors: List<ValidationError> = jacksonObjectMapper().readValue(e.responseBodyAsString)
-            assert(validationErrors.contains(validationError))
         }
     }
 
@@ -105,17 +100,15 @@ class UserEndpointsFailureTest {
 
     @DataProvider(name = "createUserMissingField")
     fun createUserMissingField(): MutableIterator<Array<Any>> {
-        return arrayListOf(
+        return arrayListOf<Array<Any>>(
             arrayOf(
-                mapOf("username" to "username", "password" to "password"),
-                addError(100, "A value must be provided", listOf("EMAIL", "LAST_NAME", "FIRST_NAME", "DOB"))
+                mapOf("username" to "username", "password" to "password")
             ),
             arrayOf(
                 mapOf(
                     "email" to "email", "password" to "password", "lastName" to "lastName", "firstName" to "firstName",
                     "username" to "username"
-                ),
-                addError(100, "A value must be provided", listOf("DOB"))
+                )
             )
         ).iterator()
     }

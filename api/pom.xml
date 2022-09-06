@@ -8,7 +8,7 @@
 		<version>0.0.1</version>
 	</parent>
 	<artifactId>api</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.4</version>
 	<name>api</name>
 	<description>Project Fawkes API</description>
 
@@ -126,6 +126,7 @@
 				<configuration>
 					<args>
 						<arg>-Xjsr305=strict</arg>
+                        <arg>-Xemit-jvm-type-annotations</arg>
 					</args>
 					<compilerPlugins>
 						<plugin>spring</plugin>
