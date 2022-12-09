@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue

@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.AuthenticationException
@@ -15,7 +15,7 @@ class AuthenticationExceptionEntryPoint : AuthenticationEntryPoint {
         authException: AuthenticationException
     ) {
         response.status = HttpStatus.UNAUTHORIZED.value()
-        response.writer.write(authException.message)
+        authException.message?.let { response.writer.write(it) }
         response.writer.flush()
     }
 }

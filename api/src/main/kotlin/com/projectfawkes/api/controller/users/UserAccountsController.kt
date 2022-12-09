@@ -1,7 +1,5 @@
 package com.projectfawkes.api.controller.users
 
-import com.projectfawkes.api.auth.AuthType
-import com.projectfawkes.api.auth.UseAuth
 import com.projectfawkes.api.controller.USERS_ENDPOINT
 import com.projectfawkes.api.controller.dto.UpdateUserDto
 import com.projectfawkes.api.controller.dto.UserDto
@@ -22,7 +20,6 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping(USERS_ENDPOINT)
-@UseAuth(AuthType.USER)
 class UserAccountsController {
     @GetMapping
     fun getUser(request: HttpServletRequest): ResponseEntity<UserDto> {

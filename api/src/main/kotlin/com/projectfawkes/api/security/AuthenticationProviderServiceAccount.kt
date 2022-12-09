@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

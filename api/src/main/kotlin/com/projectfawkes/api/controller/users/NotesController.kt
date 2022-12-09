@@ -1,7 +1,5 @@
 package com.projectfawkes.api.controller.users
 
-import com.projectfawkes.api.auth.AuthType
-import com.projectfawkes.api.auth.UseAuth
 import com.projectfawkes.api.controller.NOTES_BY_ID_ENDPOINT
 import com.projectfawkes.api.controller.NOTES_ENDPOINT
 import com.projectfawkes.api.controller.NOTES_SYNC_PUSHER_ENDPOINT
@@ -27,7 +25,6 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping(NOTES_ENDPOINT)
-@UseAuth(AuthType.USER)
 class NotesController {
     val noteIDNotUnique = "Note ID is not unique"
 

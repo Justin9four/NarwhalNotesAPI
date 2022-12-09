@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 import com.google.common.collect.ImmutableList
 import org.springframework.beans.factory.annotation.Autowired

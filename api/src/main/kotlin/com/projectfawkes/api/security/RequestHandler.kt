@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -31,13 +31,13 @@ class RequestHandler : WebMvcConfigurer {
     @Component
     class RequestMiddleware : HandlerInterceptor {
 
-        private fun setHeaders(request: HttpServletRequest, response: HttpServletResponse) {
+        private fun setHeaders(response: HttpServletResponse) {
             response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "x-auth-token")
         }
 
         override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
             // must return false because OPTIONS method will still enter other endpoint (PUT, POST, DELETE, etc)
-            setHeaders(request, response)
+            setHeaders(response)
             if (request.method == "OPTIONS") return false
             // cannot determine authType
             if (handler !is HandlerMethod) return false

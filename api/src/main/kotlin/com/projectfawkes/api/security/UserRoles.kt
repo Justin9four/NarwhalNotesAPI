@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 // ROLE prefix is required by Spring on roles
 enum class UserRoles(val value: String) {

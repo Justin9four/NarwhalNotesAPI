@@ -1,6 +1,6 @@
 package com.projectfawkes.api.dataClass
 
-import com.projectfawkes.api.auth.UserRoles
+import com.projectfawkes.api.security.UserRoles
 
 data class Account(var uid: String?, val username: String?, val email: String?, val photoUrl: String?, val roles: List<String>?) {
     fun getAccountMap(password: String?): Map<String, Any> {

@@ -3,15 +3,13 @@ package com.projectfawkes.api.controller
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.SessionCookieOptions
-import com.projectfawkes.api.auth.AuthType
-import com.projectfawkes.api.auth.UseAuth
-import com.projectfawkes.api.auth.UserRoles
 import com.projectfawkes.api.controller.dto.AuthenticateDto
 import com.projectfawkes.api.controller.dto.RegisterDto
 import com.projectfawkes.api.dataClass.Account
 import com.projectfawkes.api.dataClass.Profile
 import com.projectfawkes.api.errorHandler.UnauthorizedException
 import com.projectfawkes.api.errorHandler.ValidationException
+import com.projectfawkes.api.security.UserRoles
 import com.projectfawkes.api.service.authenticateCredentials
 import com.projectfawkes.api.service.register
 import org.springframework.http.HttpHeaders
@@ -33,7 +31,6 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping(API_ENDPOINT)
-@UseAuth(AuthType.SERVICEACCOUNT)
 class AuthenticationController {
     @PostMapping(REGISTER_ENDPOINT)
     fun register(@Valid @RequestBody registerDto: RegisterDto, errors: BindingResult): ResponseEntity<Account> {
@@ -52,11 +49,11 @@ class AuthenticationController {
             Timestamp(Date().time).toString(),
             registerDto.dob
         )
-        val accountAndToken = register(account, profile, registerDto.password!!)
+        val accountAndTokenDto = register(account, profile, registerDto.password!!)
 
         val headers = HttpHeaders()
-        headers.add("x-auth-token", accountAndToken.token)
-        return ResponseEntity(accountAndToken.account, headers, OK)
+        headers.add("x-auth-token", accountAndTokenDto.token)
+        return ResponseEntity(accountAndTokenDto.account, headers, OK)
     }
 
     @PostMapping(AUTHENTICATE_ENDPOINT)
@@ -65,14 +62,14 @@ class AuthenticationController {
         errors: BindingResult
     ): ResponseEntity<Account> {
         if (errors.hasErrors()) throw ValidationException(errors)
-        val accountAndToken = authenticateCredentials(
+        val accountAndTokenDto = authenticateCredentials(
             authenticateDto.username!!,
             authenticateDto.password!!
         )
 
         val headers = HttpHeaders()
-        headers.add("x-auth-token", accountAndToken.token)
-        return ResponseEntity(accountAndToken.account, headers, OK)
+        headers.add("x-auth-token", accountAndTokenDto.token)
+        return ResponseEntity(accountAndTokenDto.account, headers, OK)
     }
 
     @PostMapping(SIGN_OUT_ENDPOINT)

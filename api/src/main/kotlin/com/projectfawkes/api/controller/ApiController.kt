@@ -1,7 +1,5 @@
 package com.projectfawkes.api.controller
 
-import com.projectfawkes.api.auth.AuthType
-import com.projectfawkes.api.auth.UseAuth
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,7 +12,6 @@ import javax.servlet.http.HttpServletResponse
 class ApiController {
 
     @GetMapping("")
-    @UseAuth(AuthType.PUBLIC)
     fun getApiHomepage(httpServletResponse: HttpServletResponse): ResponseEntity<Any> {
         val gitHubLink = "<a href=\"https://github.com/Justin9four/NarwhalNotesAPI\">GitHub Repository</a>"
         val body =
@@ -23,7 +20,6 @@ class ApiController {
     }
 
     @GetMapping("**")
-    @UseAuth(AuthType.PUBLIC)
     fun routeNotFound(httpServletResponse: HttpServletResponse) {
         httpServletResponse.sendRedirect("/error")
     }

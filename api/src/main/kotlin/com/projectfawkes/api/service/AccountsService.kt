@@ -61,15 +61,15 @@ fun getUsers(uid: String?): List<UserCompleteDto> {
     val field = if (!uid.isNullOrBlank()) "id" else null
     val accounts = accountRepo.getValues(field, uid).filterIsInstance<Account>()
     val profiles = profileRepo.getValues(field, uid).filterIsInstance<Profile>()
-    val users = mutableListOf<UserCompleteDto>()
+    val userCompleteDtos = mutableListOf<UserCompleteDto>()
     for (account in accounts) {
         val profile = profiles.find { it.uid == account.uid }
         val enabled = !FirebaseAuth.getInstance().getUser(account.uid).isDisabled
         if (profile != null) {
-            users.add(UserCompleteDto(account, profile, enabled))
+            userCompleteDtos.add(UserCompleteDto(account, profile, enabled))
         }
     }
-    return users
+    return userCompleteDtos
 }
 
 fun enableDisableAccount(uid: String, enabled: Boolean) {

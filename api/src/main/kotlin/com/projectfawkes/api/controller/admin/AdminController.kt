@@ -1,8 +1,5 @@
 package com.projectfawkes.api.controller.admin
 
-import com.projectfawkes.api.auth.AuthType
-import com.projectfawkes.api.auth.UseAuth
-import com.projectfawkes.api.auth.UserRoles
 import com.projectfawkes.api.controller.ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT
 import com.projectfawkes.api.controller.ADMIN_ENDPOINT
 import com.projectfawkes.api.controller.ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT
@@ -12,6 +9,7 @@ import com.projectfawkes.api.controller.dto.UserCompleteDto
 import com.projectfawkes.api.dataClass.Account
 import com.projectfawkes.api.dataClass.Profile
 import com.projectfawkes.api.errorHandler.ValidationException
+import com.projectfawkes.api.security.UserRoles
 import com.projectfawkes.api.service.enableDisableAccount
 import com.projectfawkes.api.service.getUsers
 import com.projectfawkes.api.service.updateUser
@@ -25,7 +23,6 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping(ADMIN_ENDPOINT)
-@UseAuth(AuthType.ADMIN)
 class AdminController {
     @GetMapping
     fun getUsers(request: HttpServletRequest): ResponseEntity<List<UserCompleteDto>> {

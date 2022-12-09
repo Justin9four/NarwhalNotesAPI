@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 import com.google.firebase.auth.FirebaseAuth
 import com.projectfawkes.api.service.getAccountByUsername

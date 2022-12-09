@@ -3,8 +3,8 @@ package com.projectfawkes.api.repository
 import com.google.api.core.ApiFuture
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.QueryDocumentSnapshot
-import com.projectfawkes.api.auth.UserRoles
 import com.projectfawkes.api.dataClass.Account
+import com.projectfawkes.api.security.UserRoles
 
 open class AccountRepo : RepoBaseClass("accounts") {
     override fun getReturnObject(document: QueryDocumentSnapshot): Any {

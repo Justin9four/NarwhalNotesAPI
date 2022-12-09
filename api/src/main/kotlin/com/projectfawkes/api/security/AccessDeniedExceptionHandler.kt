@@ -1,4 +1,4 @@
-package com.projectfawkes.api.auth
+package com.projectfawkes.api.security
 
 import org.springframework.http.HttpStatus
 import org.springframework.security.web.access.AccessDeniedHandler
