@@ -14,6 +14,7 @@ import com.projectfawkes.api.service.authenticateCredentials
 import com.projectfawkes.api.service.register
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.OK
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.PostMapping
@@ -32,7 +33,11 @@ import javax.validation.Valid
 @RestController
 @RequestMapping(API_ENDPOINT)
 class AuthenticationController {
-    @PostMapping(REGISTER_ENDPOINT)
+    @PostMapping(
+        REGISTER_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun register(@Valid @RequestBody registerDto: RegisterDto, errors: BindingResult): ResponseEntity<Account> {
         if (errors.hasErrors()) throw ValidationException(errors)
         val account = Account(
@@ -56,7 +61,11 @@ class AuthenticationController {
         return ResponseEntity(accountAndTokenDto.account, headers, OK)
     }
 
-    @PostMapping(AUTHENTICATE_ENDPOINT)
+    @PostMapping(
+        AUTHENTICATE_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun authenticate(
         @Valid @RequestBody authenticateDto: AuthenticateDto,
         errors: BindingResult
@@ -72,7 +81,11 @@ class AuthenticationController {
         return ResponseEntity(accountAndTokenDto.account, headers, OK)
     }
 
-    @PostMapping(SIGN_OUT_ENDPOINT)
+    @PostMapping(
+        SIGN_OUT_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun signOut(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<Any> {
         val sessionCookie = WebUtils.getCookie(request, "session")
         return try {
@@ -88,9 +101,13 @@ class AuthenticationController {
         }
     }
 
-    @PostMapping(CHECK_TOKEN_ENDPOINT)
+    @PostMapping(
+        CHECK_TOKEN_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun checkToken(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<Any> {
-        // To ensure that cookies are set only on recently signed in users, check auth_time in
+        // To ensure that cookies are set only on recently signed-in users, check auth_time in
         // ID token before creating a cookie.
         val idToken = request.getHeader("idToken")
         val decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken)

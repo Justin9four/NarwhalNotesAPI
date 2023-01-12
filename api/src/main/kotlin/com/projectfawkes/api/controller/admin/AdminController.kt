@@ -14,6 +14,7 @@ import com.projectfawkes.api.service.enableDisableAccount
 import com.projectfawkes.api.service.getUsers
 import com.projectfawkes.api.service.updateUser
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
@@ -24,7 +25,8 @@ import javax.validation.Valid
 @RestController
 @RequestMapping(ADMIN_ENDPOINT)
 class AdminController {
-    @GetMapping
+    @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
+    @ResponseBody
     fun getUsers(request: HttpServletRequest): ResponseEntity<List<UserCompleteDto>> {
         // get information about requested users
         // if no uid provided all users retrieved
@@ -33,13 +35,20 @@ class AdminController {
         return ResponseEntity(users, HttpStatus.OK)
     }
 
-    @PostMapping
+    @PostMapping(
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun importUsers(request: HttpServletRequest): ResponseEntity<Any> {
         // batch import. Can create other Admin accounts. Cannot create service account
         return ResponseEntity("TODO finish import users Admin endpoint", HttpStatus.OK)
     }
 
-    @PutMapping(ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT)
+    @PutMapping(
+        ADMIN_PROMOTE_DEMOTE_ACCOUNT_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun promoteDemoteAccount(
         @Valid @RequestBody promoteDemoteAccountDto: PromoteDemoteAccountDto,
         errors: BindingResult
@@ -54,7 +63,11 @@ class AdminController {
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @PutMapping(ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT)
+    @PutMapping(
+        ADMIN_ENABLE_DISABLE_ACCOUNT_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun enableDisableAccounts(
         @Valid @RequestBody enableDisableAccountsDto: EnableDisableAccountsDto,
         errors: BindingResult

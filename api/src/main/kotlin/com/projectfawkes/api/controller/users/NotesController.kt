@@ -16,6 +16,7 @@ import com.projectfawkes.api.service.deleteNote
 import com.projectfawkes.api.service.getNotes
 import com.projectfawkes.api.service.updateNote
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.validation.BindingResult
@@ -28,13 +29,24 @@ import javax.validation.Valid
 class NotesController {
     val noteIDNotUnique = "Note ID is not unique"
 
-    @PutMapping(NOTES_UPLOAD_GOOGLE_DRIVE_ENDPOINT)
+    @PutMapping(
+        NOTES_UPLOAD_GOOGLE_DRIVE_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun uploadGoogleDrive() = ResponseEntity<Void>(HttpStatus.OK)
 
-    @PostMapping(NOTES_SYNC_PUSHER_ENDPOINT)
+    @PostMapping(
+        NOTES_SYNC_PUSHER_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun usePusher() = ResponseEntity<Void>(HttpStatus.OK)
 
-    @PostMapping
+    @PostMapping(
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun createNote(
         request: HttpServletRequest,
         @Valid @RequestBody createNoteDto: CreateNoteDto,
@@ -51,7 +63,10 @@ class NotesController {
         )
     }
 
-    @PutMapping
+    @PutMapping(
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun updateNote(
         request: HttpServletRequest,
         @Valid @RequestBody updateNoteDto: UpdateNoteDto,
@@ -68,7 +83,10 @@ class NotesController {
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @GetMapping(NOTES_BY_ID_ENDPOINT)
+    @GetMapping(
+        NOTES_BY_ID_ENDPOINT,
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun getNoteById(request: HttpServletRequest, @PathVariable id: String): ResponseEntity<Note> {
         val creator = SecurityContextHolder.getContext().authentication.principal.toString()
         val notes = getNotes("id", id)
@@ -80,14 +98,18 @@ class NotesController {
         return ResponseEntity(notes[0], HttpStatus.OK)
     }
 
-    @GetMapping()
+    @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getNotes(request: HttpServletRequest): ResponseEntity<List<Note>> {
         val creator = SecurityContextHolder.getContext().authentication.principal.toString()
         val notes = getNotes("creator", creator)
         return ResponseEntity(notes, HttpStatus.OK)
     }
 
-    @DeleteMapping(NOTES_BY_ID_ENDPOINT)
+    @DeleteMapping(
+        NOTES_BY_ID_ENDPOINT,
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun deleteNote(request: HttpServletRequest, @PathVariable id: String): ResponseEntity<Any> {
         val uid = SecurityContextHolder.getContext().authentication.principal.toString()
         val notes = getNotes("id", id)

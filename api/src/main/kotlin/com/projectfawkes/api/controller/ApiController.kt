@@ -1,6 +1,7 @@
 package com.projectfawkes.api.controller
 
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -11,7 +12,7 @@ import javax.servlet.http.HttpServletResponse
 @RequestMapping(API_ENDPOINT)
 class ApiController {
 
-    @GetMapping("")
+    @GetMapping(produces = [MediaType.TEXT_HTML_VALUE])
     fun getApiHomepage(httpServletResponse: HttpServletResponse): ResponseEntity<Any> {
         val gitHubLink = "<a href=\"https://github.com/Justin9four/NarwhalNotesAPI\">GitHub Repository</a>"
         val body =
@@ -19,7 +20,7 @@ class ApiController {
         return ResponseEntity(body, HttpStatus.OK)
     }
 
-    @GetMapping("**")
+    @GetMapping("**", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun routeNotFound(httpServletResponse: HttpServletResponse) {
         httpServletResponse.sendRedirect("/error")
     }

@@ -10,6 +10,7 @@ import com.projectfawkes.api.service.deleteUser
 import com.projectfawkes.api.service.getUser
 import com.projectfawkes.api.service.updateUser
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.validation.BindingResult
@@ -21,13 +22,16 @@ import javax.validation.Valid
 @RestController
 @RequestMapping(USERS_ENDPOINT)
 class UserAccountsController {
-    @GetMapping
+    @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getUser(request: HttpServletRequest): ResponseEntity<UserDto> {
         val uid = SecurityContextHolder.getContext().authentication.principal.toString()
         return ResponseEntity(getUser(uid), HttpStatus.OK)
     }
 
-    @PutMapping
+    @PutMapping(
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun updateUser(
         request: HttpServletRequest,
         @Valid @RequestBody updateUserDto: UpdateUserDto,
@@ -45,7 +49,10 @@ class UserAccountsController {
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @DeleteMapping
+    @DeleteMapping(
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun deleteUser(requestBody: HttpServletRequest): ResponseEntity<Any> {
         val uid = SecurityContextHolder.getContext().authentication.principal.toString()
         deleteUser(uid)
